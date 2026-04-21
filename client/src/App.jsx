@@ -6,6 +6,7 @@ import Review from './pages/Review'
 import AddWord from './pages/AddWord'
 import Vocabulary from './pages/Vocabulary'
 import Lessons from './pages/Lessons'
+import Import from './pages/Import'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -26,6 +27,7 @@ function AppRoutes() {
       <Route path="/ajouter" element={<ProtectedRoute><AddWord /></ProtectedRoute>} />
       <Route path="/vocabulaire" element={<ProtectedRoute><Vocabulary /></ProtectedRoute>} />
       <Route path="/lecons" element={<ProtectedRoute><Lessons /></ProtectedRoute>} />
+      <Route path="/import" element={<ProtectedRoute><Import /></ProtectedRoute>} />
     </Routes>
   )
 }

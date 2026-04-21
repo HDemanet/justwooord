@@ -7,6 +7,7 @@ const navItems = [
   { to: '/ajouter', label: 'Ajouter un mot', icon: '+' },
   { to: '/vocabulaire', label: 'Vocabulaire', icon: '≡' },
   { to: '/lecons', label: 'Leçons', icon: '▤' },
+  { to: '/import', label: 'Import Excel', icon: '↑' },
 ]
 
 export default function Layout({ children }) {
