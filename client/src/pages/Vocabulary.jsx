@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Layout from '../components/Layout'
 import apiClient from '../api/client'
+import AudioButton from '../components/ui/AudioButton'
 
 const CATEGORIES = [
   { value: '', label: 'Toutes les catégories' },
@@ -78,7 +79,7 @@ export default function Vocabulary() {
               >
                 <div className="flex items-center gap-4">
                   <div className="font-medium text-sm text-gray-900">
-                    {word.article ? <span className="text-gray-400 font-normal mr-1">{word.article}</span> : null}
+                    {word.article && <span className="text-gray-400 font-normal mr-1">{word.article}</span>}
                     {word.dutch}
                   </div>
                   <div className="text-sm text-gray-400">{word.french}</div>
@@ -95,14 +96,25 @@ export default function Vocabulary() {
 
               {selected?.id === word.id && (
                 <div className="px-5 py-4 bg-gray-50 border-t border-gray-100 text-sm space-y-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-medium text-gray-900">
+                      {word.article && <span className="text-gray-400 font-normal mr-1">{word.article}</span>}
+                      {word.dutch}
+                    </span>
+                    <AudioButton text={word.dutch} />
+                  </div>
                   {word.conjugated_form && (
-                    <div><span className="text-gray-400 text-xs uppercase tracking-wide">Forme</span>
-                    <div className="text-gray-700 italic mt-0.5">{word.conjugated_form}</div></div>
+                    <div>
+                      <span className="text-gray-400 text-xs uppercase tracking-wide">Forme</span>
+                      <div className="text-gray-700 italic mt-0.5">{word.conjugated_form}</div>
+                    </div>
                   )}
                   {word.example_nl && (
-                    <div><span className="text-gray-400 text-xs uppercase tracking-wide">Exemple</span>
-                    <div className="text-gray-700 mt-0.5">{word.example_nl}</div>
-                    {word.example_fr && <div className="text-gray-400 mt-0.5">{word.example_fr}</div>}</div>
+                    <div>
+                      <span className="text-gray-400 text-xs uppercase tracking-wide">Exemple</span>
+                      <div className="text-gray-700 mt-0.5">{word.example_nl}</div>
+                      {word.example_fr && <div className="text-gray-400 mt-0.5">{word.example_fr}</div>}
+                    </div>
                   )}
                   {word.separable && (
                     <div className="text-xs text-amber-600 bg-amber-50 inline-block px-2 py-0.5 rounded-full">verbe séparable</div>

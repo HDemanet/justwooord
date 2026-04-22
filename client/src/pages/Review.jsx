@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Layout from '../components/Layout'
 import apiClient from '../api/client'
+import AudioButton from '../components/ui/AudioButton'
 
 function TypingCard({ card, onRate }) {
   const [answer, setAnswer] = useState('')
@@ -128,7 +129,10 @@ function TypingCard({ card, onRate }) {
         {result === 'correct' && (
           <div className="mt-4">
             <div className="text-green-700 font-medium text-sm mb-1">Correct !</div>
-            <div className="text-lg font-medium text-teal-700">{word.dutch}</div>
+            <div className="flex items-center gap-2">
+              <div className="text-lg font-medium text-teal-700">{word.dutch}</div>
+              <AudioButton text={word.dutch} />
+            </div>
             {word.conjugated_form && (
               <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>
             )}
@@ -138,7 +142,10 @@ function TypingCard({ card, onRate }) {
         {result === 'incorrect' && (
           <div className="mt-4">
             <div className="text-amber-700 font-medium text-sm mb-2">La bonne réponse :</div>
-            <div className="text-xl font-medium text-gray-900">{word.dutch}</div>
+            <div className="flex items-center gap-2">
+              <div className="text-xl font-medium text-gray-900">{word.dutch}</div>
+              <AudioButton text={word.dutch} />
+            </div>
             {word.conjugated_form && (
               <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>
             )}
@@ -198,6 +205,7 @@ function FlipCard({ card, onRate }) {
           <>
             <div className="text-xs text-gray-400 uppercase tracking-widest mb-4">Néerlandais</div>
             <div className="text-2xl font-medium text-teal-700">{word.dutch}</div>
+            <AudioButton text={word.dutch} />
             {word.conjugated_form && (
               <div className="text-sm text-gray-400 mt-2 italic">{word.conjugated_form}</div>
             )}
