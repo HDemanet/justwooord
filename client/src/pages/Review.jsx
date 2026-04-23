@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import apiClient from '../api/client'
 import AudioButton from '../components/ui/AudioButton'
@@ -83,7 +84,7 @@ function TypingCard({ card, onRate }) {
               value={answer}
               onChange={e => setAnswer(e.target.value)}
               placeholder="Tapez le mot en néerlandais..."
-              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-teal-400 transition-colors"
+              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none transition-colors"
               autoComplete="off"
               autoCorrect="off"
               spellCheck="false"
@@ -97,10 +98,18 @@ function TypingCard({ card, onRate }) {
               <div className="mt-1 text-xs text-gray-400">Tentative {attempts + 1} / 3</div>
             )}
             <div className="mt-3 flex gap-2">
-              <button type="submit" className="flex-1 text-white text-sm font-medium py-2.5 rounded-lg transition-opacity hover:opacity-90" style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}>
+              <button
+                type="submit"
+                className="flex-1 text-white text-sm font-medium py-2.5 rounded-lg transition-opacity hover:opacity-90"
+                style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}
+              >
                 Valider
               </button>
-              <button type="button" onClick={handleGiveUp} className="px-4 py-2.5 text-sm text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg transition-colors">
+              <button
+                type="button"
+                onClick={handleGiveUp}
+                className="px-4 py-2.5 text-sm text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg transition-colors"
+              >
                 Voir la réponse
               </button>
             </div>
@@ -114,7 +123,9 @@ function TypingCard({ card, onRate }) {
               <div className="text-lg font-medium" style={{ color: '#1B2A4A' }}>{word.dutch}</div>
               <AudioButton text={word.dutch} />
             </div>
-            {word.conjugated_form && <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>}
+            {word.conjugated_form && (
+              <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>
+            )}
           </div>
         )}
 
@@ -125,14 +136,20 @@ function TypingCard({ card, onRate }) {
               <div className="text-xl font-medium text-gray-900">{word.dutch}</div>
               <AudioButton text={word.dutch} />
             </div>
-            {word.conjugated_form && <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>}
+            {word.conjugated_form && (
+              <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>
+            )}
             {word.example_nl && (
               <div className="mt-3 pt-3 border-t border-amber-100 text-sm text-gray-500">
                 <div>{word.example_nl}</div>
                 {word.example_fr && <div className="text-gray-400 mt-0.5">{word.example_fr}</div>}
               </div>
             )}
-            <button onClick={handleContinue} className="mt-4 w-full text-white text-sm font-medium py-2.5 rounded-lg transition-opacity hover:opacity-90" style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}>
+            <button
+              onClick={handleContinue}
+              className="mt-4 w-full text-white text-sm font-medium py-2.5 rounded-lg transition-opacity hover:opacity-90"
+              style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}
+            >
               J'ai compris, continuer
             </button>
           </div>
@@ -169,14 +186,18 @@ function FlipCard({ card, onRate }) {
           <>
             <div className="text-xs text-gray-400 uppercase tracking-widest mb-4">Français</div>
             <div className="text-2xl font-medium text-gray-900">{word.french}</div>
-            {word.grammatical_category && <div className="text-xs text-gray-400 mt-3">{word.grammatical_category}</div>}
+            {word.grammatical_category && (
+              <div className="text-xs text-gray-400 mt-3">{word.grammatical_category}</div>
+            )}
           </>
         ) : (
           <>
             <div className="text-xs text-gray-400 uppercase tracking-widest mb-4">Néerlandais</div>
             <div className="text-2xl font-medium" style={{ color: '#1B2A4A' }}>{word.dutch}</div>
             <AudioButton text={word.dutch} />
-            {word.conjugated_form && <div className="text-sm text-gray-400 mt-2 italic">{word.conjugated_form}</div>}
+            {word.conjugated_form && (
+              <div className="text-sm text-gray-400 mt-2 italic">{word.conjugated_form}</div>
+            )}
             {word.example_nl && (
               <div className="mt-4 pt-4 border-t border-gray-100 w-full text-sm text-gray-500 text-left">
                 <div>{word.example_nl}</div>
@@ -217,20 +238,24 @@ export default function Review() {
   const [started, setStarted] = useState(false)
   const [limit, setLimit] = useState(20)
   const [totalDue, setTotalDue] = useState(0)
+  const [searchParams] = useSearchParams()
+  const lessonId = searchParams.get('lesson_id')
 
   useEffect(() => {
-    apiClient.get('/review_cards/due?limit=999')
+    const url = `/review_cards/due?limit=999${lessonId ? `&lesson_id=${lessonId}` : ''}`
+    apiClient.get(url)
       .then(res => {
         setTotalDue(res.data.length)
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [])
+  }, [lessonId])
 
   const startSession = async () => {
     setLoading(true)
     try {
-      const res = await apiClient.get(`/review_cards/due?limit=${limit}`)
+      const url = `/review_cards/due?limit=${limit}${lessonId ? `&lesson_id=${lessonId}` : ''}`
+      const res = await apiClient.get(url)
       setCards(res.data)
       setStarted(true)
     } catch {}
@@ -257,7 +282,9 @@ export default function Review() {
   if (!started) return (
     <Layout>
       <div className="mb-6">
-        <h1 className="text-xl font-semibold mb-1" style={{ color: '#1B2A4A' }}>Révision</h1>
+        <h1 className="text-xl font-semibold mb-1" style={{ color: '#1B2A4A' }}>
+          {lessonId ? 'Révision - leçon' : 'Révision'}
+        </h1>
         <p className="text-sm" style={{ color: '#9BA3AF' }}>
           {totalDue} mot{totalDue > 1 ? 's' : ''} disponible{totalDue > 1 ? 's' : ''}
         </p>
@@ -302,7 +329,7 @@ export default function Review() {
 
         {totalDue === 0 && (
           <p className="text-xs mt-3 text-center" style={{ color: '#9BA3AF' }}>
-            Aucun mot à réviser pour l'instant.
+            Aucun mot à réviser pour cette leçon.
           </p>
         )}
       </div>
@@ -332,7 +359,9 @@ export default function Review() {
     <Layout>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold" style={{ color: '#1B2A4A' }}>Révision</h1>
+          <h1 className="text-xl font-semibold" style={{ color: '#1B2A4A' }}>
+            {lessonId ? 'Révision - leçon' : 'Révision'}
+          </h1>
           <p className="text-sm mt-1" style={{ color: '#9BA3AF' }}>FR vers NL · session du jour</p>
         </div>
         <div className="flex items-center gap-4">
