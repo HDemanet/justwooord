@@ -17,11 +17,12 @@ export default function Dashboard() {
       apiClient.get('/review_cards'),
       apiClient.get('/lessons'),
     ]).then(([due, all, lessonsRes]) => {
-      const dueCards = due.data
       const allCards = all.data
-      const mastered = allCards.filter(c => c.interval >= 21).length
-      const learning = allCards.filter(c => c.interval < 21).length
-      setStats({ due: dueCards.length, mastered, learning })
+      setStats({
+        due: due.data.length,
+        mastered: allCards.filter(c => c.interval >= 21).length,
+        learning: allCards.filter(c => c.interval < 21).length,
+      })
       setLessons(lessonsRes.data.slice(0, 3))
       setLoading(false)
     }).catch(() => setLoading(false))
@@ -31,57 +32,63 @@ export default function Dashboard() {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
   })
 
+  const navy = '#1B2A4A'
+  const blue = '#4A7FCB'
+  const lightBlue = '#EEF2FA'
+
   return (
     <Layout>
-      <div className="mb-6">
-        <h1 className="text-xl font-medium text-gray-900">Bonjour, {user?.name}</h1>
-        <p className="text-sm text-gray-400 mt-1">{today}</p>
+      <div className="mb-7">
+        <h1 className="text-xl font-semibold mb-1" style={{ color: navy }}>
+          Bonjour, {user?.name}.
+        </h1>
+        <p className="text-sm" style={{ color: '#9BA3AF' }}>{today}</p>
       </div>
 
       <div className="grid grid-cols-3 gap-3 mb-5">
-        <div className="bg-gray-50 rounded-lg p-4">
-          <div className="text-2xl font-medium text-teal-600">
-            {loading ? '-' : stats.due}
+        {[
+          { num: stats.due, label: 'à réviser', sub: "aujourd'hui", accent: true },
+          { num: stats.mastered, label: 'mots', sub: 'maîtrisés' },
+          { num: stats.learning, label: 'en', sub: 'apprentissage' },
+        ].map(({ num, label, sub, accent }) => (
+          <div key={label} className="rounded-xl p-5" style={{ background: lightBlue }}>
+            <div className="text-3xl font-bold mb-1.5" style={{ color: accent ? blue : navy }}>
+              {loading ? '-' : num}
+            </div>
+            <div className="text-xs" style={{ color: '#7A8494', lineHeight: 1.4 }}>
+              {label}<br />{sub}
+            </div>
           </div>
-          <div className="text-xs text-gray-400 uppercase tracking-wide mt-1">à réviser aujourd'hui</div>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-4">
-          <div className="text-2xl font-medium text-gray-700">
-            {loading ? '-' : stats.mastered}
-          </div>
-          <div className="text-xs text-gray-400 uppercase tracking-wide mt-1">mots maîtrisés</div>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-4">
-          <div className="text-2xl font-medium text-gray-700">
-            {loading ? '-' : stats.learning}
-          </div>
-          <div className="text-xs text-gray-400 uppercase tracking-wide mt-1">en apprentissage</div>
-        </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-5 gap-4">
-        <div className="col-span-2 bg-white border border-gray-100 rounded-xl p-5">
-          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-4">Session du jour</div>
+      <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 1.6fr' }}>
+        <div className="rounded-xl p-5" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
+          <div className="text-xs font-medium mb-4 tracking-widest uppercase" style={{ color: blue }}>
+            Session du jour
+          </div>
           {loading ? (
-            <p className="text-sm text-gray-400">Chargement...</p>
+            <p className="text-sm" style={{ color: '#9BA3AF' }}>Chargement...</p>
           ) : stats.due === 0 ? (
             <>
-              <p className="text-sm text-gray-500 mb-4">Tous tes mots sont à jour.</p>
+              <p className="text-sm mb-4" style={{ color: '#4A5568' }}>Tous tes mots sont à jour.</p>
               <button
                 onClick={() => navigate('/ajouter')}
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+                className="w-full rounded-lg py-2.5 text-sm font-medium transition-opacity hover:opacity-90"
+                style={{ background: navy, color: 'white', border: 'none', cursor: 'pointer' }}
               >
                 Ajouter un mot
               </button>
             </>
           ) : (
             <>
-              <p className="text-sm text-gray-500 mb-4">
-                <span className="font-medium text-gray-900">{stats.due} mot{stats.due > 1 ? 's' : ''}</span> à réviser, durée estimée <span className="font-medium text-gray-900">{Math.ceil(stats.due * 0.7)} min</span>
+              <p className="text-sm mb-4" style={{ color: '#4A5568' }}>
+                <span className="font-semibold" style={{ color: navy }}>{stats.due} mot{stats.due > 1 ? 's' : ''}</span> à réviser · <span className="font-semibold" style={{ color: navy }}>{Math.ceil(stats.due * 0.7)} min</span>
               </p>
               <button
                 onClick={() => navigate('/reviser')}
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+                className="w-full rounded-lg py-2.5 text-sm font-medium transition-opacity hover:opacity-90"
+                style={{ background: navy, color: 'white', border: 'none', cursor: 'pointer' }}
               >
                 Commencer la révision
               </button>
@@ -89,20 +96,26 @@ export default function Dashboard() {
           )}
         </div>
 
-        <div className="col-span-3 bg-white border border-gray-100 rounded-xl p-5">
-          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-4">Leçons récentes</div>
+        <div className="rounded-xl p-5" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
+          <div className="text-xs font-medium mb-4 tracking-widest uppercase" style={{ color: blue }}>
+            Leçons récentes
+          </div>
           {loading ? (
-            <p className="text-sm text-gray-400">Chargement...</p>
+            <p className="text-sm" style={{ color: '#9BA3AF' }}>Chargement...</p>
           ) : lessons.length === 0 ? (
-            <p className="text-sm text-gray-400">Aucune leçon pour l'instant.</p>
+            <p className="text-sm" style={{ color: '#9BA3AF' }}>Aucune leçon pour l'instant.</p>
           ) : (
-            <div className="space-y-3">
+            <div>
               {lessons.map((lesson, i) => (
-                <div key={lesson.id} className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${i === 0 ? 'bg-teal-400' : 'bg-gray-200'}`} />
+                <div key={lesson.id} className="flex items-center gap-3 py-2.5" style={{ borderBottom: i < lessons.length - 1 ? '1px solid #F0F4FA' : 'none' }}>
+                  <div className="rounded-lg flex items-center justify-center flex-shrink-0" style={{ width: '30px', height: '30px', background: i === 0 ? lightBlue : '#F5F5F5' }}>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke={i === 0 ? blue : '#9BA3AF'} strokeWidth="1.5">
+                      <rect x="1" y="1" width="10" height="10" rx="1"/><path d="M1 5h10"/>
+                    </svg>
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm text-gray-900 truncate">{lesson.title}</div>
-                    <div className="text-xs text-gray-400">
+                    <div className="text-sm font-medium truncate" style={{ color: navy }}>{lesson.title}</div>
+                    <div className="text-xs mt-0.5" style={{ color: '#9BA3AF' }}>
                       {lesson.date && new Date(lesson.date).toLocaleDateString('fr-BE', { day: 'numeric', month: 'long', year: 'numeric' })}
                       {lesson.teacher && ` · ${lesson.teacher}`}
                     </div>
@@ -113,9 +126,10 @@ export default function Dashboard() {
           )}
           <button
             onClick={() => navigate('/lecons')}
-            className="mt-4 text-xs text-teal-600 hover:text-teal-700 transition-colors"
+            className="mt-3 text-xs transition-opacity hover:opacity-75"
+            style={{ color: blue, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
-            Voir toutes les leçons
+            Voir toutes les leçons →
           </button>
         </div>
       </div>

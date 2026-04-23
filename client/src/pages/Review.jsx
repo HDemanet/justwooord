@@ -44,7 +44,6 @@ function TypingCard({ card, onRate }) {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (result) return
-
     if (isCorrect(answer)) {
       setResult('correct')
       setTimeout(() => onRate(card.id, attempts === 0 ? 3 : 2), 1200)
@@ -60,14 +59,8 @@ function TypingCard({ card, onRate }) {
     }
   }
 
-  const handleGiveUp = () => {
-    setResult('incorrect')
-    setHint(null)
-  }
-
-  const handleContinue = () => {
-    onRate(card.id, 1)
-  }
+  const handleGiveUp = () => { setResult('incorrect'); setHint(null) }
+  const handleContinue = () => onRate(card.id, 1)
 
   return (
     <div className="max-w-xl mx-auto">
@@ -95,31 +88,19 @@ function TypingCard({ card, onRate }) {
               autoCorrect="off"
               spellCheck="false"
             />
-
             {hint && (
               <div className="mt-2 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
                 Indice : {hint}
               </div>
             )}
-
             {attempts > 0 && attempts < 3 && (
-              <div className="mt-1 text-xs text-gray-400">
-                Tentative {attempts + 1} / 3
-              </div>
+              <div className="mt-1 text-xs text-gray-400">Tentative {attempts + 1} / 3</div>
             )}
-
             <div className="mt-3 flex gap-2">
-              <button
-                type="submit"
-                className="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium py-2.5 rounded-lg transition-colors"
-              >
+              <button type="submit" className="flex-1 text-white text-sm font-medium py-2.5 rounded-lg transition-opacity hover:opacity-90" style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}>
                 Valider
               </button>
-              <button
-                type="button"
-                onClick={handleGiveUp}
-                className="px-4 py-2.5 text-sm text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg transition-colors"
-              >
+              <button type="button" onClick={handleGiveUp} className="px-4 py-2.5 text-sm text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg transition-colors">
                 Voir la réponse
               </button>
             </div>
@@ -130,12 +111,10 @@ function TypingCard({ card, onRate }) {
           <div className="mt-4">
             <div className="text-green-700 font-medium text-sm mb-1">Correct !</div>
             <div className="flex items-center gap-2">
-              <div className="text-lg font-medium text-teal-700">{word.dutch}</div>
+              <div className="text-lg font-medium" style={{ color: '#1B2A4A' }}>{word.dutch}</div>
               <AudioButton text={word.dutch} />
             </div>
-            {word.conjugated_form && (
-              <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>
-            )}
+            {word.conjugated_form && <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>}
           </div>
         )}
 
@@ -146,19 +125,14 @@ function TypingCard({ card, onRate }) {
               <div className="text-xl font-medium text-gray-900">{word.dutch}</div>
               <AudioButton text={word.dutch} />
             </div>
-            {word.conjugated_form && (
-              <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>
-            )}
+            {word.conjugated_form && <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>}
             {word.example_nl && (
               <div className="mt-3 pt-3 border-t border-amber-100 text-sm text-gray-500">
                 <div>{word.example_nl}</div>
                 {word.example_fr && <div className="text-gray-400 mt-0.5">{word.example_fr}</div>}
               </div>
             )}
-            <button
-              onClick={handleContinue}
-              className="mt-4 w-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium py-2.5 rounded-lg transition-colors"
-            >
+            <button onClick={handleContinue} className="mt-4 w-full text-white text-sm font-medium py-2.5 rounded-lg transition-opacity hover:opacity-90" style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}>
               J'ai compris, continuer
             </button>
           </div>
@@ -172,9 +146,7 @@ function FlipCard({ card, onRate }) {
   const [flipped, setFlipped] = useState(false)
   const word = card.word
 
-  useEffect(() => {
-    setFlipped(false)
-  }, [card.id])
+  useEffect(() => { setFlipped(false) }, [card.id])
 
   useEffect(() => {
     const handleKey = (e) => {
@@ -197,18 +169,14 @@ function FlipCard({ card, onRate }) {
           <>
             <div className="text-xs text-gray-400 uppercase tracking-widest mb-4">Français</div>
             <div className="text-2xl font-medium text-gray-900">{word.french}</div>
-            {word.grammatical_category && (
-              <div className="text-xs text-gray-400 mt-3">{word.grammatical_category}</div>
-            )}
+            {word.grammatical_category && <div className="text-xs text-gray-400 mt-3">{word.grammatical_category}</div>}
           </>
         ) : (
           <>
             <div className="text-xs text-gray-400 uppercase tracking-widest mb-4">Néerlandais</div>
-            <div className="text-2xl font-medium text-teal-700">{word.dutch}</div>
+            <div className="text-2xl font-medium" style={{ color: '#1B2A4A' }}>{word.dutch}</div>
             <AudioButton text={word.dutch} />
-            {word.conjugated_form && (
-              <div className="text-sm text-gray-400 mt-2 italic">{word.conjugated_form}</div>
-            )}
+            {word.conjugated_form && <div className="text-sm text-gray-400 mt-2 italic">{word.conjugated_form}</div>}
             {word.example_nl && (
               <div className="mt-4 pt-4 border-t border-gray-100 w-full text-sm text-gray-500 text-left">
                 <div>{word.example_nl}</div>
@@ -246,12 +214,28 @@ export default function Review() {
   const [loading, setLoading] = useState(true)
   const [done, setDone] = useState(false)
   const [mode, setMode] = useState('typing')
+  const [started, setStarted] = useState(false)
+  const [limit, setLimit] = useState(20)
+  const [totalDue, setTotalDue] = useState(0)
 
   useEffect(() => {
-    apiClient.get('/review_cards/due')
-      .then(res => { setCards(res.data); setLoading(false) })
+    apiClient.get('/review_cards/due?limit=999')
+      .then(res => {
+        setTotalDue(res.data.length)
+        setLoading(false)
+      })
       .catch(() => setLoading(false))
   }, [])
+
+  const startSession = async () => {
+    setLoading(true)
+    try {
+      const res = await apiClient.get(`/review_cards/due?limit=${limit}`)
+      setCards(res.data)
+      setStarted(true)
+    } catch {}
+    setLoading(false)
+  }
 
   const handleRate = useCallback(async (cardId, quality) => {
     try {
@@ -270,22 +254,76 @@ export default function Review() {
     </Layout>
   )
 
-  if (done || cards.length === 0) return (
+  if (!started) return (
+    <Layout>
+      <div className="mb-6">
+        <h1 className="text-xl font-semibold mb-1" style={{ color: '#1B2A4A' }}>Révision</h1>
+        <p className="text-sm" style={{ color: '#9BA3AF' }}>
+          {totalDue} mot{totalDue > 1 ? 's' : ''} disponible{totalDue > 1 ? 's' : ''}
+        </p>
+      </div>
+
+      <div className="rounded-xl p-6 max-w-sm" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
+        <div className="text-xs font-medium mb-4 tracking-widest uppercase" style={{ color: '#4A7FCB' }}>
+          Combien de mots aujourd'hui ?
+        </div>
+        <div className="grid grid-cols-4 gap-2 mb-5">
+          {[10, 20, 30, 50].map(n => (
+            <button
+              key={n}
+              onClick={() => setLimit(n)}
+              className="py-2.5 rounded-lg text-sm font-medium transition-all"
+              style={{
+                background: limit === n ? '#1B2A4A' : '#EEF2FA',
+                color: limit === n ? 'white' : '#1B2A4A',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              {n}
+            </button>
+          ))}
+        </div>
+
+        {limit > totalDue && totalDue > 0 && (
+          <p className="text-xs mb-4" style={{ color: '#9BA3AF' }}>
+            Seulement {totalDue} mot{totalDue > 1 ? 's' : ''} disponible{totalDue > 1 ? 's' : ''} aujourd'hui.
+          </p>
+        )}
+
+        <button
+          onClick={startSession}
+          disabled={totalDue === 0}
+          className="w-full rounded-lg py-2.5 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-40"
+          style={{ background: '#1B2A4A', color: 'white', border: 'none', cursor: 'pointer' }}
+        >
+          Commencer
+        </button>
+
+        {totalDue === 0 && (
+          <p className="text-xs mt-3 text-center" style={{ color: '#9BA3AF' }}>
+            Aucun mot à réviser pour l'instant.
+          </p>
+        )}
+      </div>
+    </Layout>
+  )
+
+  if (done) return (
     <Layout>
       <div className="max-w-xl mx-auto mt-16 text-center">
         <div className="text-4xl mb-4">✓</div>
-        <h2 className="text-lg font-medium text-gray-900 mb-2">
-          {cards.length === 0 ? 'Aucun mot à réviser' : 'Session terminée'}
-        </h2>
-        <p className="text-sm text-gray-400 mb-6">
-          {cards.length === 0
-            ? 'Tous tes mots sont à jour. Reviens plus tard ou ajoute du nouveau vocabulaire.'
-            : `${cards.length} mot${cards.length > 1 ? 's' : ''} révisé${cards.length > 1 ? 's' : ''}.`
-          }
+        <h2 className="text-lg font-medium mb-2" style={{ color: '#1B2A4A' }}>Session terminée</h2>
+        <p className="text-sm mb-6" style={{ color: '#9BA3AF' }}>
+          {cards.length} mot{cards.length > 1 ? 's' : ''} révisé{cards.length > 1 ? 's' : ''}.
         </p>
-        <a href="/ajouter" className="inline-block bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">
-          Ajouter un mot
-        </a>
+        <button
+          onClick={() => { setStarted(false); setDone(false); setCurrent(0) }}
+          className="rounded-lg px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+          style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}
+        >
+          Nouvelle session
+        </button>
       </div>
     </Layout>
   )
@@ -294,33 +332,35 @@ export default function Review() {
     <Layout>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-medium text-gray-900">Révision</h1>
-          <p className="text-sm text-gray-400 mt-1">FR vers NL · session du jour</p>
+          <h1 className="text-xl font-semibold" style={{ color: '#1B2A4A' }}>Révision</h1>
+          <p className="text-sm mt-1" style={{ color: '#9BA3AF' }}>FR vers NL · session du jour</p>
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex gap-1 rounded-lg p-1" style={{ background: '#EEF2FA' }}>
             <button
               onClick={() => setMode('typing')}
-              className={`px-3 py-1.5 text-xs rounded-md transition-colors ${mode === 'typing' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+              className="px-3 py-1.5 text-xs rounded-md transition-colors"
+              style={{ background: mode === 'typing' ? 'white' : 'transparent', color: mode === 'typing' ? '#1B2A4A' : '#9BA3AF', border: 'none', cursor: 'pointer' }}
             >
               Frappe
             </button>
             <button
               onClick={() => setMode('flashcard')}
-              className={`px-3 py-1.5 text-xs rounded-md transition-colors ${mode === 'flashcard' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+              className="px-3 py-1.5 text-xs rounded-md transition-colors"
+              style={{ background: mode === 'flashcard' ? 'white' : 'transparent', color: mode === 'flashcard' ? '#1B2A4A' : '#9BA3AF', border: 'none', cursor: 'pointer' }}
             >
               Flashcard
             </button>
           </div>
-          <div className="text-sm text-gray-400">{current + 1} / {cards.length}</div>
+          <div className="text-sm" style={{ color: '#9BA3AF' }}>{current + 1} / {cards.length}</div>
         </div>
       </div>
 
       <div className="mb-6">
-        <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-1 rounded-full overflow-hidden" style={{ background: '#EEF2FA' }}>
           <div
-            className="h-full bg-teal-500 rounded-full transition-all"
-            style={{ width: `${(current / cards.length) * 100}%` }}
+            className="h-full rounded-full transition-all"
+            style={{ width: `${(current / cards.length) * 100}%`, background: '#4A7FCB' }}
           />
         </div>
       </div>

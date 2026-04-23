@@ -13,11 +13,12 @@ const GRAMMATICAL_CATEGORIES = [
 ]
 
 const THEMATIC_CATEGORIES = [
-  { value: 'justice_procedure', label: 'Justice - procédure' },
-  { value: 'justice_personnes', label: 'Justice - personnes' },
-  { value: 'general', label: 'Verbes généraux' },
+  { value: 'noms_generaux', label: 'Noms généraux' },
+  { value: 'verbes_generaux', label: 'Verbes généraux' },
+  { value: 'adj_adv_expr', label: 'Adj. / Adv. / Expressions' },
   { value: 'temps_freq', label: 'Temps et fréquence' },
-  { value: 'grammaire', label: 'Grammaire' },
+  { value: 'justice_personnes', label: 'Justice - personnes' },
+  { value: 'justice_procedure', label: 'Justice - procédure' },
 ]
 
 const ARTICLES = [
