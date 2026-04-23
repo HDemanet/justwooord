@@ -64,98 +64,105 @@ function TypingCard({ card, onRate }) {
   const handleContinue = () => onRate(card.id, 1)
 
   return (
-    <div className="max-w-xl mx-auto">
-      <div className={`bg-white border rounded-xl p-8 mb-4 transition-colors ${
-        result === 'correct' ? 'border-green-200 bg-green-50' :
-        result === 'incorrect' ? 'border-amber-200 bg-amber-50' :
-        'border-gray-100'
-      }`}>
-        <div className="text-xs text-gray-400 uppercase tracking-widest mb-3">Français</div>
-        <div className="text-2xl font-medium text-gray-900 mb-1">{word.french}</div>
-        {word.grammatical_category && (
-          <div className="text-xs text-gray-400">{word.grammatical_category}</div>
-        )}
+    <>
+      <div className="max-w-xl mx-auto">
+        <div className={`bg-white border rounded-xl p-8 mb-4 transition-colors ${
+          result === 'correct' ? 'border-green-200 bg-green-50' :
+          result === 'incorrect' ? 'border-amber-200 bg-amber-50' :
+          'border-gray-100'
+        }`}>
+          <div className="text-xs text-gray-400 uppercase tracking-widest mb-3">Français</div>
+          <div className="text-2xl font-medium text-gray-900 mb-1">{word.french}</div>
+          {word.grammatical_category && (
+            <div className="text-xs text-gray-400">{word.grammatical_category}</div>
+          )}
 
-        {!result && (
-          <form onSubmit={handleSubmit} className="mt-6">
-            <input
-              ref={inputRef}
-              type="text"
-              value={answer}
-              onChange={e => setAnswer(e.target.value)}
-              placeholder="Tapez le mot en néerlandais..."
-              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none transition-colors"
-              autoComplete="off"
-              autoCorrect="off"
-              spellCheck="false"
-            />
-            {hint && (
-              <div className="mt-2 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
-                Indice : {hint}
+          {!result && (
+            <form onSubmit={handleSubmit} className="mt-6">
+              <input
+                ref={inputRef}
+                type="text"
+                value={answer}
+                onChange={e => setAnswer(e.target.value)}
+                placeholder="Tapez le mot en néerlandais..."
+                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none transition-colors"
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck="false"
+              />
+              {hint && (
+                <div className="mt-2 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
+                  Indice : {hint}
+                </div>
+              )}
+              {attempts > 0 && attempts < 3 && (
+                <div className="mt-1 text-xs text-gray-400">Tentative {attempts + 1} / 3</div>
+              )}
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 text-white text-sm font-medium py-2.5 rounded-lg transition-opacity hover:opacity-90"
+                  style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}
+                >
+                  Valider
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGiveUp}
+                  className="px-4 py-2.5 text-sm text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg transition-colors"
+                >
+                  Voir la réponse
+                </button>
               </div>
-            )}
-            {attempts > 0 && attempts < 3 && (
-              <div className="mt-1 text-xs text-gray-400">Tentative {attempts + 1} / 3</div>
-            )}
-            <div className="mt-3 flex gap-2">
+            </form>
+          )}
+
+          {result === 'correct' && (
+            <div className="mt-4">
+              <div className="text-green-700 font-medium text-sm mb-1">Correct !</div>
+              <div className="flex items-center gap-2">
+                <div className="text-lg font-medium" style={{ color: '#1B2A4A' }}>{word.dutch}</div>
+                <AudioButton text={word.dutch} />
+              </div>
+              {word.conjugated_form && (
+                <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>
+              )}
+            </div>
+          )}
+
+          {result === 'incorrect' && (
+            <div className="mt-4">
+              <div className="text-amber-700 font-medium text-sm mb-2">La bonne réponse :</div>
+              <div className="flex items-center gap-2">
+                <div className="text-xl font-medium text-gray-900">{word.dutch}</div>
+                <AudioButton text={word.dutch} />
+              </div>
+              {word.conjugated_form && (
+                <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>
+              )}
+              {word.example_nl && (
+                <div className="mt-3 pt-3 border-t border-amber-100 text-sm text-gray-500">
+                  <div>{word.example_nl}</div>
+                  {word.example_fr && <div className="text-gray-400 mt-0.5">{word.example_fr}</div>}
+                </div>
+              )}
               <button
-                type="submit"
-                className="flex-1 text-white text-sm font-medium py-2.5 rounded-lg transition-opacity hover:opacity-90"
+                onClick={handleContinue}
+                className="mt-4 w-full text-white text-sm font-medium py-2.5 rounded-lg transition-opacity hover:opacity-90"
                 style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}
               >
-                Valider
-              </button>
-              <button
-                type="button"
-                onClick={handleGiveUp}
-                className="px-4 py-2.5 text-sm text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg transition-colors"
-              >
-                Voir la réponse
+                J'ai compris, continuer
               </button>
             </div>
-          </form>
-        )}
-
-        {result === 'correct' && (
-          <div className="mt-4">
-            <div className="text-green-700 font-medium text-sm mb-1">Correct !</div>
-            <div className="flex items-center gap-2">
-              <div className="text-lg font-medium" style={{ color: '#1B2A4A' }}>{word.dutch}</div>
-              <AudioButton text={word.dutch} />
-            </div>
-            {word.conjugated_form && (
-              <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>
-            )}
-          </div>
-        )}
-
-        {result === 'incorrect' && (
-          <div className="mt-4">
-            <div className="text-amber-700 font-medium text-sm mb-2">La bonne réponse :</div>
-            <div className="flex items-center gap-2">
-              <div className="text-xl font-medium text-gray-900">{word.dutch}</div>
-              <AudioButton text={word.dutch} />
-            </div>
-            {word.conjugated_form && (
-              <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>
-            )}
-            {word.example_nl && (
-              <div className="mt-3 pt-3 border-t border-amber-100 text-sm text-gray-500">
-                <div>{word.example_nl}</div>
-                {word.example_fr && <div className="text-gray-400 mt-0.5">{word.example_fr}</div>}
-              </div>
-            )}
-            <button
-              onClick={handleContinue}
-              className="mt-4 w-full text-white text-sm font-medium py-2.5 rounded-lg transition-opacity hover:opacity-90"
-              style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}
-            >
-              J'ai compris, continuer
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {result === 'correct' && `Correct. Le mot est : ${word.dutch}`}
+        {result === 'incorrect' && `Incorrect. La bonne réponse est : ${word.dutch}`}
+      </div>
+    </>
   )
 }
 
@@ -180,6 +187,10 @@ function FlipCard({ card, onRate }) {
     <div className="max-w-xl mx-auto">
       <div
         onClick={() => !flipped && setFlipped(true)}
+        role="button"
+        tabIndex={0}
+        aria-label={flipped ? `Réponse : ${word.dutch}` : `Mot à traduire : ${word.french}. Cliquer pour révéler.`}
+        onKeyDown={e => e.key === 'Enter' && !flipped && setFlipped(true)}
         className={`bg-white border border-gray-100 rounded-xl p-10 text-center min-h-56 flex flex-col items-center justify-center mb-4 transition-colors ${!flipped ? 'cursor-pointer hover:bg-gray-50' : ''}`}
       >
         {!flipped ? (

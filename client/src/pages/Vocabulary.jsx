@@ -28,6 +28,9 @@ export default function Vocabulary() {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('')
   const [selectedId, setSelectedId] = useState(null)
+  const [editingId, setEditingId] = useState(null)
+  const [editForm, setEditForm] = useState({})
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     const params = new URLSearchParams()
@@ -47,6 +50,41 @@ export default function Vocabulary() {
       const stripB = b.dutch?.replace(/^(de|het)\s+/i, '').toLowerCase() || ''
       return stripA.localeCompare(stripB, 'nl')
     })
+
+  const startEdit = (word) => {
+    setEditingId(word.id)
+    setEditForm({
+      dutch: word.dutch || '',
+      french: word.french || '',
+      conjugated_form: word.conjugated_form || '',
+      example_nl: word.example_nl || '',
+      example_fr: word.example_fr || '',
+    })
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null)
+    setEditForm({})
+  }
+
+  const saveEdit = async (wordId) => {
+    setSaving(true)
+    try {
+      const res = await apiClient.patch(`/words/${wordId}`, { word: editForm })
+      setWords(ws => ws.map(w => w.id === wordId ? { ...w, ...res.data } : w))
+      setEditingId(null)
+    } catch {}
+    setSaving(false)
+  }
+
+  const deleteWord = async (wordId) => {
+    if (!confirm('Supprimer ce mot définitivement ?')) return
+    try {
+      await apiClient.delete(`/words/${wordId}`)
+      setWords(ws => ws.filter(w => w.id !== wordId))
+      setSelectedId(null)
+    } catch {}
+  }
 
   return (
     <Layout>
@@ -83,7 +121,10 @@ export default function Vocabulary() {
           {filtered.map((word) => (
             <div key={word.id} className="rounded-xl overflow-hidden" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
               <div
-                onClick={() => setSelectedId(selectedId === word.id ? null : word.id)}
+                onClick={() => {
+                  if (editingId === word.id) return
+                  setSelectedId(selectedId === word.id ? null : word.id)
+                }}
                 className="flex items-center justify-between px-5 py-3.5 cursor-pointer transition-colors"
                 onMouseEnter={e => e.currentTarget.style.background = '#F8F9FC'}
                 onMouseLeave={e => e.currentTarget.style.background = 'white'}
@@ -109,7 +150,7 @@ export default function Vocabulary() {
                 </div>
               </div>
 
-              {selectedId === word.id && (
+              {selectedId === word.id && editingId !== word.id && (
                 <div className="px-5 py-4 text-sm space-y-3" style={{ background: '#F8F9FC', borderTop: '1px solid #E2E8F4' }}>
                   <AudioButton text={word.dutch} />
                   {word.conjugated_form && (
@@ -132,6 +173,93 @@ export default function Vocabulary() {
                       verbe séparable
                     </span>
                   )}
+                  <div className="flex gap-3 pt-1">
+                    <button
+                      onClick={() => startEdit(word)}
+                      className="text-xs font-medium px-3 py-1.5 rounded-lg transition-opacity hover:opacity-80"
+                      style={{ background: '#EEF2FA', color: '#4A7FCB', border: 'none', cursor: 'pointer' }}
+                    >
+                      Modifier
+                    </button>
+                    <button
+                      onClick={() => deleteWord(word.id)}
+                      className="text-xs transition-colors"
+                      style={{ color: '#D1D5DB', background: 'none', border: 'none', cursor: 'pointer' }}
+                      onMouseEnter={e => e.currentTarget.style.color = '#EF4444'}
+                      onMouseLeave={e => e.currentTarget.style.color = '#D1D5DB'}
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {editingId === word.id && (
+                <div className="px-5 py-4 space-y-3" style={{ background: '#F8F9FC', borderTop: '1px solid #E2E8F4' }}>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs uppercase tracking-wide mb-1" style={{ color: '#9BA3AF' }}>Néerlandais</label>
+                      <input
+                        type="text"
+                        value={editForm.dutch}
+                        onChange={e => setEditForm(f => ({ ...f, dutch: e.target.value }))}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs uppercase tracking-wide mb-1" style={{ color: '#9BA3AF' }}>Français</label>
+                      <input
+                        type="text"
+                        value={editForm.french}
+                        onChange={e => setEditForm(f => ({ ...f, french: e.target.value }))}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase tracking-wide mb-1" style={{ color: '#9BA3AF' }}>Forme conjuguée</label>
+                    <input
+                      type="text"
+                      value={editForm.conjugated_form}
+                      onChange={e => setEditForm(f => ({ ...f, conjugated_form: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase tracking-wide mb-1" style={{ color: '#9BA3AF' }}>Exemple NL</label>
+                    <textarea
+                      value={editForm.example_nl}
+                      onChange={e => setEditForm(f => ({ ...f, example_nl: e.target.value }))}
+                      rows={2}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs uppercase tracking-wide mb-1" style={{ color: '#9BA3AF' }}>Traduction exemple</label>
+                    <textarea
+                      value={editForm.example_fr}
+                      onChange={e => setEditForm(f => ({ ...f, example_fr: e.target.value }))}
+                      rows={2}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none resize-none"
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => saveEdit(word.id)}
+                      disabled={saving}
+                      className="text-xs font-medium px-3 py-1.5 rounded-lg transition-opacity hover:opacity-90 disabled:opacity-40"
+                      style={{ background: '#1B2A4A', color: 'white', border: 'none', cursor: 'pointer' }}
+                    >
+                      {saving ? 'Enregistrement...' : 'Enregistrer'}
+                    </button>
+                    <button
+                      onClick={cancelEdit}
+                      className="text-xs"
+                      style={{ color: '#9BA3AF', background: 'none', border: 'none', cursor: 'pointer' }}
+                    >
+                      Annuler
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

@@ -25,54 +25,64 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="bg-white border border-gray-100 rounded-xl p-8 w-full max-w-sm">
-        <div className="mb-8">
-          <div className="text-teal-700 font-medium text-xl tracking-tight">JustWoord</div>
-          <div className="text-gray-400 text-xs uppercase tracking-widest mt-1">néerlandais judiciaire</div>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8F9FC' }}>
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl mb-4" style={{ background: '#1B2A4A' }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2 8h12M8 2v12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <h1 className="text-2xl font-semibold" style={{ color: '#1B2A4A' }}>JustWoord</h1>
+          <p className="text-sm mt-1" style={{ color: '#9BA3AF' }}>Apprendre le néerlandais</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs text-gray-400 uppercase tracking-wide mb-1.5">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 transition-colors"
-              placeholder="helene@justwooord.be"
-              required
-            />
-          </div>
+        <div className="rounded-xl p-7" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: '#9BA3AF' }}>
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none transition-colors"
+                placeholder="helene@justwooord.be"
+                required
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs text-gray-400 uppercase tracking-wide mb-1.5">
-              Mot de passe
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 transition-colors"
-              placeholder="••••••••"
-              required
-            />
-          </div>
+            <div>
+              <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: '#9BA3AF' }}>
+                Mot de passe
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none transition-colors"
+                placeholder="••••••••"
+                required
+              />
+            </div>
 
-          {error && (
-            <p className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">{error}</p>
-          )}
+            {error && (
+              <p className="text-xs px-3 py-2 rounded-lg" style={{ color: '#92400E', background: '#FEF3C7' }}>
+                {error}
+              </p>
+            )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
-          >
-            {loading ? 'Connexion...' : 'Se connecter'}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-lg py-2.5 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-40"
+              style={{ background: '#1B2A4A', color: 'white', border: 'none', cursor: 'pointer' }}
+            >
+              {loading ? 'Connexion...' : 'Se connecter'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   )
