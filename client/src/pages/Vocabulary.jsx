@@ -153,6 +153,17 @@ export default function Vocabulary() {
               {selectedId === word.id && editingId !== word.id && (
                 <div className="px-5 py-4 text-sm space-y-3" style={{ background: '#F8F9FC', borderTop: '1px solid #E2E8F4' }}>
                   <AudioButton text={word.dutch} />
+
+                  {word.lesson && (
+                    <div>
+                      <div className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#9BA3AF' }}>Leçon</div>
+                      <div className="text-xs" style={{ color: '#4A7FCB' }}>
+                        {word.lesson.title}
+                        {word.lesson.date && ` · ${new Date(word.lesson.date).toLocaleDateString('fr-BE', { day: 'numeric', month: 'long', year: 'numeric' })}`}
+                      </div>
+                    </div>
+                  )}
+
                   {word.conjugated_form && (
                     <div>
                       <div className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#9BA3AF' }}>Forme</div>
