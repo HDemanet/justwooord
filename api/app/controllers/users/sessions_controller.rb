@@ -14,7 +14,7 @@ class Users::SessionsController < Devise::SessionsController
     }, status: :ok
   end
 
-  def respond_to_on_destroy
+  def respond_to_on_destroy(*args)
     head :ok
   end
 end
