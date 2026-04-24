@@ -15,6 +15,6 @@ class Users::SessionsController < Devise::SessionsController
   end
 
   def respond_to_on_destroy
-    render json: { message: 'Déconnexion réussie.' }, status: :ok
+    head :ok
   end
 end
