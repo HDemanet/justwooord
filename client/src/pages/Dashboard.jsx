@@ -62,7 +62,7 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 1.6fr' }}>
+      <div className="flex flex-col md:grid gap-4" style={{ gridTemplateColumns: '1fr 1.6fr' }}>
         <div className="rounded-xl p-5" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
           <div className="text-xs font-medium mb-4 tracking-widest uppercase" style={{ color: blue }}>
             Session du jour

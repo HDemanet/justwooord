@@ -28,7 +28,7 @@ export default function Import() {
       })
       setResult(res.data)
     } catch (err) {
-      setError(err.response?.data?.error || 'Erreur lors de l\'import.')
+      setError(err.response?.data?.error || "Erreur lors de l'import.")
     } finally {
       setLoading(false)
     }
@@ -36,41 +36,64 @@ export default function Import() {
 
   return (
     <Layout>
+      <style>{`
+        input[type="file"]::file-selector-button {
+          background: #1B2A4A;
+          color: white;
+          border: none;
+          padding: 7px 14px;
+          border-radius: 8px;
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          margin-right: 12px;
+          transition: opacity 0.2s;
+        }
+        input[type="file"]::file-selector-button:hover {
+          opacity: 0.85;
+        }
+      `}</style>
+
       <div className="mb-6">
-        <h1 className="text-xl font-medium text-gray-900">Import Excel</h1>
-        <p className="text-sm text-gray-400 mt-1">Importe ton fichier vocabulaire_neerlandais.xlsx</p>
+        <h1 className="text-xl font-semibold mb-1" style={{ color: '#1B2A4A' }}>Import Excel</h1>
+        <p className="text-sm" style={{ color: '#9BA3AF' }}>Importe ton fichier vocabulaire_neerlandais.xlsx</p>
       </div>
 
-      <div className="bg-white border border-gray-100 rounded-xl p-6 max-w-lg">
+      <div className="rounded-xl p-4 md:p-6 w-full" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
         <form onSubmit={handleSubmit} className="space-y-4">
+
           <div>
-            <label className="block text-xs text-gray-400 uppercase tracking-wide mb-1.5">
+            <label className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#9BA3AF' }}>
               Fichier Excel (.xlsx)
             </label>
             <input
               type="file"
               accept=".xlsx"
               onChange={e => setFile(e.target.files[0])}
-              className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 transition-colors"
+              className="w-full text-sm"
+              style={{ color: '#4A5568' }}
             />
           </div>
 
-          <div className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 space-y-1">
-            <p>Le fichier doit contenir les onglets de ton tableau existant.</p>
-            <p>Les mots déjà présents seront ignorés automatiquement.</p>
-          </div>
-
-          {error && <p className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">{error}</p>}
+          {error && (
+            <p className="text-xs px-3 py-2 rounded-lg" style={{ color: '#92400E', background: '#FEF3C7' }}>
+              {error}
+            </p>
+          )}
 
           {result && (
-            <div className="text-sm bg-teal-50 rounded-lg p-4 space-y-1">
-              <p className="font-medium text-teal-700">{result.message}</p>
-              <p className="text-teal-600">{result.imported} mots importés</p>
-              {result.skipped > 0 && <p className="text-gray-500">{result.skipped} ignorés</p>}
+            <div className="rounded-lg p-4 space-y-1" style={{ background: '#EEF2FA', border: '1px solid #D0DCF0' }}>
+              <p className="font-medium text-sm" style={{ color: '#1B2A4A' }}>{result.message}</p>
+              <p className="text-sm" style={{ color: '#4A7FCB' }}>{result.imported} mots importés</p>
+              {result.skipped > 0 && (
+                <p className="text-sm" style={{ color: '#9BA3AF' }}>{result.skipped} ignorés</p>
+              )}
               {result.errors?.length > 0 && (
                 <div className="mt-2">
-                  <p className="text-amber-600 text-xs">Erreurs :</p>
-                  {result.errors.map((e, i) => <p key={i} className="text-xs text-amber-500">{e}</p>)}
+                  <p className="text-xs mb-1" style={{ color: '#92400E' }}>Erreurs :</p>
+                  {result.errors.map((e, i) => (
+                    <p key={i} className="text-xs" style={{ color: '#B45309' }}>{e}</p>
+                  ))}
                 </div>
               )}
             </div>
@@ -79,7 +102,8 @@ export default function Import() {
           <button
             type="submit"
             disabled={!file || loading}
-            className="w-full bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+            className="w-full text-sm font-medium py-2.5 rounded-lg transition-opacity hover:opacity-90 disabled:opacity-40"
+            style={{ background: '#1B2A4A', color: 'white', border: 'none', cursor: 'pointer' }}
           >
             {loading ? 'Import en cours...' : 'Importer'}
           </button>

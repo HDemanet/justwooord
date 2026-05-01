@@ -68,7 +68,7 @@ export default function AddWord() {
       })
       setTimeout(() => setSuccess(false), 3000)
     } catch {
-      setError('Erreur lors de l\'enregistrement.')
+      setError("Erreur lors de l'enregistrement.")
     } finally {
       setSaving(false)
     }
@@ -77,109 +77,109 @@ export default function AddWord() {
   return (
     <Layout>
       <div className="mb-6">
-        <h1 className="text-xl font-medium text-gray-900">Ajouter un mot</h1>
-        <p className="text-sm text-gray-400 mt-1">Ajout rapide après le cours</p>
+        <h1 className="text-xl font-semibold mb-1" style={{ color: '#1B2A4A' }}>Ajouter un mot</h1>
+        <p className="text-sm" style={{ color: '#9BA3AF' }}>Ajout rapide après le cours</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white border border-gray-100 rounded-xl p-6 max-w-2xl">
-        <div className="grid grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="rounded-xl p-4 md:p-6 w-full max-w-4xl" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
-          <div className="col-span-2 sm:col-span-1">
-            <label className="block text-xs text-gray-400 uppercase tracking-wide mb-1.5">Mot néerlandais</label>
+          <div>
+            <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: '#9BA3AF' }}>Mot néerlandais</label>
             <input
               type="text"
               value={form.dutch}
               onChange={e => set('dutch', e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 transition-colors"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none transition-colors"
               placeholder="ex. neerschieten"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs text-gray-400 uppercase tracking-wide mb-1.5">Article</label>
+            <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: '#9BA3AF' }}>Article</label>
             <select
               value={form.article}
               onChange={e => set('article', e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 transition-colors"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none transition-colors"
             >
               {ARTICLES.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="block text-xs text-gray-400 uppercase tracking-wide mb-1.5">Catégorie grammaticale</label>
+            <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: '#9BA3AF' }}>Catégorie grammaticale</label>
             <select
               value={form.grammatical_category}
               onChange={e => set('grammatical_category', e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 transition-colors"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none transition-colors"
             >
               {GRAMMATICAL_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="block text-xs text-gray-400 uppercase tracking-wide mb-1.5">Catégorie thématique</label>
+            <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: '#9BA3AF' }}>Catégorie thématique</label>
             <select
               value={form.thematic_category}
               onChange={e => set('thematic_category', e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 transition-colors"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none transition-colors"
             >
               {THEMATIC_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
           </div>
 
-          <div className="col-span-2">
-            <label className="block text-xs text-gray-400 uppercase tracking-wide mb-1.5">Traduction française</label>
+          <div className="sm:col-span-2">
+            <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: '#9BA3AF' }}>Traduction française</label>
             <input
               type="text"
               value={form.french}
               onChange={e => set('french', e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 transition-colors"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none transition-colors"
               placeholder="ex. abattre (par balle)"
               required
             />
           </div>
 
-          <div className="col-span-2">
-            <label className="block text-xs text-gray-400 uppercase tracking-wide mb-1.5">Forme conjuguée / info</label>
+          <div className="sm:col-span-2 lg:col-span-3">
+            <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: '#9BA3AF' }}>Forme conjuguée / info</label>
             <input
               type="text"
               value={form.conjugated_form}
               onChange={e => set('conjugated_form', e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 transition-colors"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none transition-colors"
               placeholder="ex. ik schiet neer"
             />
           </div>
 
-          <div className="col-span-2">
-            <label className="block text-xs text-gray-400 uppercase tracking-wide mb-1.5">Exemple en néerlandais</label>
+          <div className="sm:col-span-2 lg:col-span-3">
+            <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: '#9BA3AF' }}>Exemple en néerlandais</label>
             <textarea
               value={form.example_nl}
               onChange={e => set('example_nl', e.target.value)}
               rows={2}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 transition-colors resize-none"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none resize-none transition-colors"
               placeholder="ex. hij werd terstond neergeschoten"
             />
           </div>
 
-          <div className="col-span-2">
-            <label className="block text-xs text-gray-400 uppercase tracking-wide mb-1.5">Traduction de l'exemple</label>
+          <div className="sm:col-span-2 lg:col-span-3">
+            <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: '#9BA3AF' }}>Traduction de l'exemple</label>
             <textarea
               value={form.example_fr}
               onChange={e => set('example_fr', e.target.value)}
               rows={2}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 transition-colors resize-none"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none resize-none transition-colors"
               placeholder="ex. il fut abattu sur le champ"
             />
           </div>
 
-          <div className="col-span-2">
-            <label className="block text-xs text-gray-400 uppercase tracking-wide mb-1.5">Leçon associée</label>
+          <div className="sm:col-span-2 lg:col-span-3">
+            <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: '#9BA3AF' }}>Leçon associée</label>
             <select
               value={form.lesson_id}
               onChange={e => set('lesson_id', e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 transition-colors"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none transition-colors"
             >
               <option value="">Aucune leçon</option>
               {lessons.map(l => (
@@ -191,34 +191,38 @@ export default function AddWord() {
           </div>
 
           {form.grammatical_category === 'verbe' && (
-            <div className="col-span-2 flex items-center gap-2">
+            <div className="sm:col-span-2 lg:col-span-3 flex items-center gap-2">
               <input
                 type="checkbox"
                 id="separable"
                 checked={form.separable}
                 onChange={e => set('separable', e.target.checked)}
-                className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                className="rounded border-gray-300"
               />
-              <label htmlFor="separable" className="text-sm text-gray-600">Verbe séparable (scheidbaar)</label>
+              <label htmlFor="separable" className="text-sm" style={{ color: '#4A5568' }}>
+                Verbe séparable (scheidbaar)
+              </label>
             </div>
           )}
         </div>
 
-        {error && <p className="mt-4 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">{error}</p>}
-        {success && <p className="mt-4 text-xs text-teal-700 bg-teal-50 px-3 py-2 rounded-lg">Mot enregistré avec succès.</p>}
+        {error && <p className="mt-4 text-xs px-3 py-2 rounded-lg" style={{ color: '#92400E', background: '#FEF3C7' }}>{error}</p>}
+        {success && <p className="mt-4 text-xs px-3 py-2 rounded-lg" style={{ color: '#065F46', background: '#ECFDF5' }}>Mot enregistré avec succès.</p>}
 
-        <div className="mt-6 flex gap-3">
+        <div className="mt-6 flex flex-col sm:flex-row gap-3">
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="px-4 py-2.5 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-4 py-2.5 text-sm rounded-lg border border-gray-200 transition-colors"
+            style={{ color: '#4A5568', background: 'none', cursor: 'pointer' }}
           >
             Annuler
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="px-6 py-2.5 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-50 rounded-lg transition-colors"
+            className="px-6 py-2.5 text-sm font-medium text-white disabled:opacity-50 rounded-lg transition-opacity hover:opacity-90"
+            style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}
           >
             {saving ? 'Enregistrement...' : 'Enregistrer le mot'}
           </button>

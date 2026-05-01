@@ -55,7 +55,7 @@ export default function Lessons() {
         </div>
         <button
           onClick={() => setShowForm(f => !f)}
-          className="text-sm font-medium px-4 py-2.5 rounded-lg transition-opacity hover:opacity-90"
+          className="text-sm font-medium px-3 py-2 md:px-4 md:py-2.5 rounded-lg transition-opacity hover:opacity-90"
           style={{ background: '#1B2A4A', color: 'white', border: 'none', cursor: 'pointer' }}
         >
           + Nouvelle leçon
@@ -63,9 +63,9 @@ export default function Lessons() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="rounded-xl p-5 mb-5 max-w-xl" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
+        <form onSubmit={handleSubmit} className="rounded-xl p-4 md:p-5 mb-5 w-full max-w-2xl" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="col-span-1 sm:col-span-2">
               <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: '#9BA3AF' }}>Titre</label>
               <input
                 type="text"
@@ -96,7 +96,7 @@ export default function Lessons() {
                 placeholder="ex. Jeanne"
               />
             </div>
-            <div className="col-span-2">
+            <div className="col-span-1 sm:col-span-2">
               <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: '#9BA3AF' }}>Sujet</label>
               <input
                 type="text"
@@ -108,7 +108,7 @@ export default function Lessons() {
             </div>
           </div>
           {error && <p className="mt-3 text-xs px-3 py-2 rounded-lg" style={{ color: '#92400E', background: '#FEF3C7' }}>{error}</p>}
-          <div className="mt-4 flex gap-3">
+          <div className="mt-4 flex flex-col sm:flex-row gap-3">
             <button
               type="button"
               onClick={() => setShowForm(false)}
@@ -134,34 +134,37 @@ export default function Lessons() {
       ) : lessons.length === 0 ? (
         <div className="text-sm text-center mt-10" style={{ color: '#9BA3AF' }}>Aucune leçon pour l'instant.</div>
       ) : (
-        <div className="space-y-2 max-w-2xl">
+        <div className="space-y-2 w-full">
           {lessons.map((lesson) => (
-            <div key={lesson.id} className="rounded-xl px-5 py-4 flex items-center justify-between" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium truncate" style={{ color: '#1B2A4A' }}>{lesson.title}</div>
-                <div className="text-xs mt-0.5" style={{ color: '#9BA3AF' }}>
-                  {lesson.date && new Date(lesson.date).toLocaleDateString('fr-BE', { day: 'numeric', month: 'long', year: 'numeric' })}
-                  {lesson.teacher && ` · ${lesson.teacher}`}
-                  {lesson.topic && ` · ${lesson.topic}`}
+            <div key={lesson.id} className="rounded-xl px-4 py-4 md:px-5" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate" style={{ color: '#1B2A4A' }}>{lesson.title}</div>
+                  <div className="text-xs mt-0.5" style={{ color: '#9BA3AF' }}>
+                    {lesson.date && new Date(lesson.date).toLocaleDateString('fr-BE', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {lesson.teacher && ` · ${lesson.teacher}`}
+                    {lesson.topic && ` · ${lesson.topic}`}
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-3 ml-4 flex-shrink-0">
-                <button
-                  onClick={() => navigate(`/reviser?lesson_id=${lesson.id}`)}
-                  className="text-xs font-medium px-3 py-1.5 rounded-lg transition-opacity hover:opacity-80"
-                  style={{ background: '#EEF2FA', color: '#4A7FCB', border: 'none', cursor: 'pointer' }}
-                >
-                  Réviser
-                </button>
-                <button
-                  onClick={() => handleDelete(lesson.id)}
-                  className="text-xs transition-colors"
-                  style={{ color: '#D1D5DB', background: 'none', border: 'none', cursor: 'pointer' }}
-                  onMouseEnter={e => e.currentTarget.style.color = '#EF4444'}
-                  onMouseLeave={e => e.currentTarget.style.color = '#D1D5DB'}
-                >
-                  Supprimer
-                </button>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    onClick={() => navigate(`/reviser?lesson_id=${lesson.id}`)}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition-opacity hover:opacity-80"
+                    style={{ background: '#EEF2FA', color: '#4A7FCB', border: 'none', cursor: 'pointer' }}
+                  >
+                    Réviser
+                  </button>
+                  <button
+                    onClick={() => handleDelete(lesson.id)}
+                    className="text-xs transition-colors"
+                    style={{ color: '#D1D5DB', background: 'none', border: 'none', cursor: 'pointer' }}
+                    onMouseEnter={e => e.currentTarget.style.color = '#EF4444'}
+                    onMouseLeave={e => e.currentTarget.style.color = '#D1D5DB'}
+                    aria-label="Supprimer la leçon"
+                  >
+                    Supprimer
+                  </button>
+                </div>
               </div>
             </div>
           ))}

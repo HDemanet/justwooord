@@ -65,14 +65,14 @@ function TypingCard({ card, onRate }) {
 
   return (
     <>
-      <div className="max-w-xl mx-auto">
-        <div className={`bg-white border rounded-xl p-8 mb-4 transition-colors ${
+      <div className="w-full max-w-xl mx-auto">
+        <div className={`bg-white border rounded-xl p-5 md:p-8 mb-4 transition-colors ${
           result === 'correct' ? 'border-green-200 bg-green-50' :
           result === 'incorrect' ? 'border-amber-200 bg-amber-50' :
           'border-gray-100'
         }`}>
           <div className="text-xs text-gray-400 uppercase tracking-widest mb-3">Français</div>
-          <div className="text-2xl font-medium text-gray-900 mb-1">{word.french}</div>
+          <div className="text-xl md:text-2xl font-medium text-gray-900 mb-1">{word.french}</div>
           {word.grammatical_category && (
             <div className="text-xs text-gray-400">{word.grammatical_category}</div>
           )}
@@ -101,7 +101,7 @@ function TypingCard({ card, onRate }) {
               <div className="mt-3 flex gap-2">
                 <button
                   type="submit"
-                  className="flex-1 text-white text-sm font-medium py-2.5 rounded-lg transition-opacity hover:opacity-90"
+                  className="flex-1 text-white text-sm font-medium py-3 rounded-lg transition-opacity hover:opacity-90"
                   style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}
                 >
                   Valider
@@ -109,7 +109,7 @@ function TypingCard({ card, onRate }) {
                 <button
                   type="button"
                   onClick={handleGiveUp}
-                  className="px-4 py-2.5 text-sm text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg transition-colors"
+                  className="px-4 py-3 text-sm text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg transition-colors"
                 >
                   Voir la réponse
                 </button>
@@ -124,9 +124,7 @@ function TypingCard({ card, onRate }) {
                 <div className="text-lg font-medium" style={{ color: '#1B2A4A' }}>{word.dutch}</div>
                 <AudioButton text={word.dutch} />
               </div>
-              {word.conjugated_form && (
-                <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>
-              )}
+              {word.conjugated_form && <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>}
             </div>
           )}
 
@@ -137,9 +135,7 @@ function TypingCard({ card, onRate }) {
                 <div className="text-xl font-medium text-gray-900">{word.dutch}</div>
                 <AudioButton text={word.dutch} />
               </div>
-              {word.conjugated_form && (
-                <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>
-              )}
+              {word.conjugated_form && <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>}
               {word.example_nl && (
                 <div className="mt-3 pt-3 border-t border-amber-100 text-sm text-gray-500">
                   <div>{word.example_nl}</div>
@@ -148,7 +144,7 @@ function TypingCard({ card, onRate }) {
               )}
               <button
                 onClick={handleContinue}
-                className="mt-4 w-full text-white text-sm font-medium py-2.5 rounded-lg transition-opacity hover:opacity-90"
+                className="mt-4 w-full text-white text-sm font-medium py-3 rounded-lg transition-opacity hover:opacity-90"
                 style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}
               >
                 J'ai compris, continuer
@@ -184,31 +180,28 @@ function FlipCard({ card, onRate }) {
   }, [flipped, card.id, onRate])
 
   return (
-    <div className="max-w-xl mx-auto">
+    <div className="w-full max-w-xl mx-auto">
       <div
         onClick={() => !flipped && setFlipped(true)}
         role="button"
         tabIndex={0}
         aria-label={flipped ? `Réponse : ${word.dutch}` : `Mot à traduire : ${word.french}. Cliquer pour révéler.`}
         onKeyDown={e => e.key === 'Enter' && !flipped && setFlipped(true)}
-        className={`bg-white border border-gray-100 rounded-xl p-10 text-center min-h-56 flex flex-col items-center justify-center mb-4 transition-colors ${!flipped ? 'cursor-pointer hover:bg-gray-50' : ''}`}
+        className={`bg-white border border-gray-100 rounded-xl p-8 md:p-10 text-center flex flex-col items-center justify-center mb-4 transition-colors ${!flipped ? 'cursor-pointer hover:bg-gray-50' : ''}`}
+        style={{ minHeight: '200px' }}
       >
         {!flipped ? (
           <>
             <div className="text-xs text-gray-400 uppercase tracking-widest mb-4">Français</div>
-            <div className="text-2xl font-medium text-gray-900">{word.french}</div>
-            {word.grammatical_category && (
-              <div className="text-xs text-gray-400 mt-3">{word.grammatical_category}</div>
-            )}
+            <div className="text-xl md:text-2xl font-medium text-gray-900">{word.french}</div>
+            {word.grammatical_category && <div className="text-xs text-gray-400 mt-3">{word.grammatical_category}</div>}
           </>
         ) : (
           <>
             <div className="text-xs text-gray-400 uppercase tracking-widest mb-4">Néerlandais</div>
-            <div className="text-2xl font-medium" style={{ color: '#1B2A4A' }}>{word.dutch}</div>
+            <div className="text-xl md:text-2xl font-medium" style={{ color: '#1B2A4A' }}>{word.dutch}</div>
             <AudioButton text={word.dutch} />
-            {word.conjugated_form && (
-              <div className="text-sm text-gray-400 mt-2 italic">{word.conjugated_form}</div>
-            )}
+            {word.conjugated_form && <div className="text-sm text-gray-400 mt-2 italic">{word.conjugated_form}</div>}
             {word.example_nl && (
               <div className="mt-4 pt-4 border-t border-gray-100 w-full text-sm text-gray-500 text-left">
                 <div>{word.example_nl}</div>
@@ -224,15 +217,15 @@ function FlipCard({ card, onRate }) {
           Cliquer ou appuyer sur <kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">Espace</kbd> pour révéler
         </p>
       ) : (
-        <div className="grid grid-cols-3 gap-3">
-          <button onClick={() => onRate(card.id, 1)} className="py-3 rounded-lg bg-red-50 text-red-600 text-sm font-medium hover:bg-red-100 transition-colors">
-            Difficile<span className="block text-xs font-normal mt-0.5 opacity-70">revu demain</span>
+        <div className="grid grid-cols-3 gap-2 md:gap-3">
+          <button onClick={() => onRate(card.id, 1)} className="py-3 md:py-4 rounded-lg bg-red-50 text-red-600 text-sm font-medium hover:bg-red-100 transition-colors">
+            Difficile<span className="block text-xs font-normal mt-0.5 opacity-70">demain</span>
           </button>
-          <button onClick={() => onRate(card.id, 2)} className="py-3 rounded-lg bg-amber-50 text-amber-600 text-sm font-medium hover:bg-amber-100 transition-colors">
-            Correct<span className="block text-xs font-normal mt-0.5 opacity-70">revu dans 3 j.</span>
+          <button onClick={() => onRate(card.id, 2)} className="py-3 md:py-4 rounded-lg bg-amber-50 text-amber-600 text-sm font-medium hover:bg-amber-100 transition-colors">
+            Correct<span className="block text-xs font-normal mt-0.5 opacity-70">3 jours</span>
           </button>
-          <button onClick={() => onRate(card.id, 3)} className="py-3 rounded-lg bg-green-50 text-green-600 text-sm font-medium hover:bg-green-100 transition-colors">
-            Facile<span className="block text-xs font-normal mt-0.5 opacity-70">revu dans 7 j.</span>
+          <button onClick={() => onRate(card.id, 3)} className="py-3 md:py-4 rounded-lg bg-green-50 text-green-600 text-sm font-medium hover:bg-green-100 transition-colors">
+            Facile<span className="block text-xs font-normal mt-0.5 opacity-70">7 jours</span>
           </button>
         </div>
       )}
@@ -255,10 +248,7 @@ export default function Review() {
   useEffect(() => {
     const url = `/review_cards/due?limit=999${lessonId ? `&lesson_id=${lessonId}` : ''}`
     apiClient.get(url)
-      .then(res => {
-        setTotalDue(res.data.length)
-        setLoading(false)
-      })
+      .then(res => { setTotalDue(res.data.length); setLoading(false) })
       .catch(() => setLoading(false))
   }, [lessonId])
 
@@ -301,16 +291,15 @@ export default function Review() {
         </p>
       </div>
 
-      <div className="rounded-xl p-6 max-w-sm" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
-        <div className="text-xs font-medium mb-4 tracking-widest uppercase" style={{ color: '#4A7FCB' }}>
+<div className="rounded-xl p-5 w-full" style={{ background: 'white', border: '1px solid #E2E8F4' }}>        <div className="text-xs font-medium mb-4 tracking-widest uppercase" style={{ color: '#4A7FCB' }}>
           Combien de mots aujourd'hui ?
         </div>
-        <div className="grid grid-cols-4 gap-2 mb-5">
-          {[10, 20, 30, 50].map(n => (
+        <div className="grid grid-cols-3 gap-2 mb-5">
+          {[10, 20, 30].map(n => (
             <button
               key={n}
               onClick={() => setLimit(n)}
-              className="py-2.5 rounded-lg text-sm font-medium transition-all"
+              className="py-3 rounded-lg text-sm font-medium transition-all"
               style={{
                 background: limit === n ? '#1B2A4A' : '#EEF2FA',
                 color: limit === n ? 'white' : '#1B2A4A',
@@ -332,7 +321,7 @@ export default function Review() {
         <button
           onClick={startSession}
           disabled={totalDue === 0}
-          className="w-full rounded-lg py-2.5 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-40"
+          className="w-full rounded-lg py-3 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-40"
           style={{ background: '#1B2A4A', color: 'white', border: 'none', cursor: 'pointer' }}
         >
           Commencer
@@ -340,7 +329,7 @@ export default function Review() {
 
         {totalDue === 0 && (
           <p className="text-xs mt-3 text-center" style={{ color: '#9BA3AF' }}>
-            Aucun mot à réviser pour cette leçon.
+            Aucun mot à réviser pour l'instant.
           </p>
         )}
       </div>
@@ -357,7 +346,7 @@ export default function Review() {
         </p>
         <button
           onClick={() => { setStarted(false); setDone(false); setCurrent(0) }}
-          className="rounded-lg px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+          className="rounded-lg px-5 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
           style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}
         >
           Nouvelle session
@@ -368,14 +357,14 @@ export default function Review() {
 
   return (
     <Layout>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 md:mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold" style={{ color: '#1B2A4A' }}>
             {lessonId ? 'Révision - leçon' : 'Révision'}
           </h1>
-          <p className="text-sm mt-1" style={{ color: '#9BA3AF' }}>FR vers NL · session du jour</p>
+          <p className="text-sm mt-1" style={{ color: '#9BA3AF' }}>FR vers NL</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <div className="flex gap-1 rounded-lg p-1" style={{ background: '#EEF2FA' }}>
             <button
               onClick={() => setMode('typing')}
@@ -392,11 +381,11 @@ export default function Review() {
               Flashcard
             </button>
           </div>
-          <div className="text-sm" style={{ color: '#9BA3AF' }}>{current + 1} / {cards.length}</div>
+          <div className="text-sm" style={{ color: '#9BA3AF' }}>{current + 1}/{cards.length}</div>
         </div>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-4 md:mb-6">
         <div className="h-1 rounded-full overflow-hidden" style={{ background: '#EEF2FA' }}>
           <div
             className="h-full rounded-full transition-all"
