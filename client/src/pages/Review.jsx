@@ -424,17 +424,62 @@ export default function Review() {
   const [limit, setLimit] = useState(20)
   const [totalDue, setTotalDue] = useState(0)
   const [summary, setSummary] = useState({})
+  const [savedSession, setSavedSession] = useState(null)
   const [searchParams] = useSearchParams()
   const lessonId = searchParams.get('lesson_id')
 
+  // Charge le total disponible et vérifie s'il y a une session sauvegardée
   useEffect(() => {
     const url = `/review_cards/due?limit=999${lessonId ? `&lesson_id=${lessonId}` : ''}`
     apiClient.get(url)
       .then(res => { setTotalDue(res.data.length); setLoading(false) })
       .catch(() => setLoading(false))
+
+    // Vérifie session sauvegardée
+    const saved = sessionStorage.getItem('justwooord_session')
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        // N'affiche que si c'est la même leçon (ou pas de leçon)
+        if (parsed.lessonId === lessonId) {
+          setSavedSession(parsed)
+        }
+      } catch {}
+    }
   }, [lessonId])
 
+  // Sauvegarde la session à chaque changement
+  useEffect(() => {
+    if (started && cards.length > 0 && !done) {
+      sessionStorage.setItem('justwooord_session', JSON.stringify({
+        cards,
+        current,
+        mode,
+        limit,
+        summary,
+        lessonId,
+      }))
+    }
+  }, [cards, current, mode, started, done, lessonId, limit, summary])
+
+  const resumeSession = () => {
+    if (!savedSession) return
+    setCards(savedSession.cards)
+    setCurrent(savedSession.current)
+    setMode(savedSession.mode || 'typing')
+    setLimit(savedSession.limit || 20)
+    setSummary(savedSession.summary || {})
+    setSavedSession(null)
+    setStarted(true)
+  }
+
+  const clearSavedSession = () => {
+    sessionStorage.removeItem('justwooord_session')
+    setSavedSession(null)
+  }
+
   const startSession = async () => {
+    clearSavedSession()
     setLoading(true)
     try {
       const url = `/review_cards/due?limit=${limit}${lessonId ? `&lesson_id=${lessonId}` : ''}`
@@ -458,7 +503,11 @@ export default function Review() {
 
       setSummary(prev => ({
         ...prev,
-        [card.id]: { card, mastered: !requeue }
+        [card.id]: {
+          card,
+          mastered: !requeue,
+          easy: !requeue && quality === 3
+        }
       }))
 
       if (requeue) {
@@ -466,6 +515,7 @@ export default function Review() {
         const remaining = newCards.length - current
         if (remaining === 0) {
           setDone(true)
+          sessionStorage.removeItem('justwooord_session')
           return newCards
         }
         const insertAt = current + 1 + Math.floor(Math.random() * remaining)
@@ -475,6 +525,7 @@ export default function Review() {
         const nextIndex = current + 1
         if (nextIndex >= newCards.length) {
           setDone(true)
+          sessionStorage.removeItem('justwooord_session')
         } else {
           setCurrent(nextIndex)
         }
@@ -499,6 +550,33 @@ export default function Review() {
           {totalDue} mot{totalDue > 1 ? 's' : ''} disponible{totalDue > 1 ? 's' : ''}
         </p>
       </div>
+
+      {savedSession && (
+        <div className="rounded-xl p-4 mb-4 w-full max-w-lg flex items-center justify-between gap-4" style={{ background: '#EEF2FA', border: '1px solid #D0DCF0' }}>
+          <div>
+            <div className="text-sm font-medium" style={{ color: '#1B2A4A' }}>Session en cours</div>
+            <div className="text-xs mt-0.5" style={{ color: '#9BA3AF' }}>
+              Mot {savedSession.current + 1} sur {savedSession.cards.length}
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={resumeSession}
+              className="text-xs font-medium px-3 py-1.5 rounded-lg transition-opacity hover:opacity-90"
+              style={{ background: '#1B2A4A', color: 'white', border: 'none', cursor: 'pointer' }}
+            >
+              Reprendre
+            </button>
+            <button
+              onClick={clearSavedSession}
+              className="text-xs px-3 py-1.5 rounded-lg transition-colors"
+              style={{ color: '#9BA3AF', background: 'none', border: '1px solid #E2E8F4', cursor: 'pointer' }}
+            >
+              Ignorer
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="rounded-xl p-5 w-full max-w-lg" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
         <div className="text-xs font-medium mb-4 tracking-widest uppercase" style={{ color: '#4A7FCB' }}>
@@ -534,7 +612,7 @@ export default function Review() {
           className="w-full rounded-lg py-3 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-40"
           style={{ background: '#1B2A4A', color: 'white', border: 'none', cursor: 'pointer' }}
         >
-          Commencer
+          Nouvelle session
         </button>
 
         {totalDue === 0 && (
@@ -547,7 +625,8 @@ export default function Review() {
   )
 
   if (done) {
-    const masteredCards = Object.values(summary).filter(s => s.mastered).map(s => s.card)
+    const masteredEasy = Object.values(summary).filter(s => s.mastered && s.easy).map(s => s.card)
+    const masteredHard = Object.values(summary).filter(s => s.mastered && !s.easy).map(s => s.card)
     const missedCards = Object.values(summary).filter(s => !s.mastered).map(s => s.card)
 
     return (
@@ -557,18 +636,34 @@ export default function Review() {
             <div className="text-4xl mb-3">✓</div>
             <h2 className="text-xl font-semibold mb-1" style={{ color: '#1B2A4A' }}>Session terminée</h2>
             <p className="text-sm" style={{ color: '#9BA3AF' }}>
-              {masteredCards.length} mot{masteredCards.length > 1 ? 's' : ''} maîtrisé{masteredCards.length > 1 ? 's' : ''} · {missedCards.length} à retravailler
+              {masteredEasy.length + masteredHard.length} mot{(masteredEasy.length + masteredHard.length) > 1 ? 's' : ''} maîtrisé{(masteredEasy.length + masteredHard.length) > 1 ? 's' : ''} · {missedCards.length} à retravailler
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            {masteredCards.length > 0 && (
-              <div className="rounded-xl p-5" style={{ background: '#EEF2FA', border: '1px solid #D0DCF0' }}>
-                <div className="text-xs font-medium mb-3 uppercase tracking-widest" style={{ color: '#4A7FCB' }}>
-                  Maîtrisés ({masteredCards.length})
+          <div className="rounded-xl p-5 mb-4" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
+            {masteredEasy.length > 0 && (
+              <div className="mb-4">
+                <div className="text-xs font-medium mb-2 uppercase tracking-widest" style={{ color: '#4A7FCB' }}>
+                  Connus du premier coup ({masteredEasy.length})
                 </div>
                 <div className="space-y-1.5">
-                  {masteredCards.map(card => (
+                  {masteredEasy.map(card => (
+                    <div key={card.id} className="text-sm flex items-center justify-between gap-4">
+                      <span className="font-medium" style={{ color: '#1B2A4A' }}>{card.word?.dutch}</span>
+                      <span style={{ color: '#9BA3AF' }}>{card.word?.french}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {masteredHard.length > 0 && (
+              <div className={masteredEasy.length > 0 ? 'pt-4 border-t border-gray-100 mb-4' : 'mb-4'}>
+                <div className="text-xs font-medium mb-2 uppercase tracking-widest" style={{ color: '#9BA3AF' }}>
+                  Trouvés avec effort ({masteredHard.length}) · revu dans 3 j.
+                </div>
+                <div className="space-y-1.5">
+                  {masteredHard.map(card => (
                     <div key={card.id} className="text-sm flex items-center justify-between gap-4">
                       <span className="font-medium" style={{ color: '#1B2A4A' }}>{card.word?.dutch}</span>
                       <span style={{ color: '#9BA3AF' }}>{card.word?.french}</span>
@@ -579,9 +674,9 @@ export default function Review() {
             )}
 
             {missedCards.length > 0 && (
-              <div className="rounded-xl p-5" style={{ background: '#FEF9EC', border: '1px solid #F3E0A0' }}>
-                <div className="text-xs font-medium mb-3 uppercase tracking-widest" style={{ color: '#92400E' }}>
-                  À retravailler ({missedCards.length})
+              <div className={(masteredEasy.length > 0 || masteredHard.length > 0) ? 'pt-4 border-t border-gray-100' : ''}>
+                <div className="text-xs font-medium mb-2 uppercase tracking-widest" style={{ color: '#92400E' }}>
+                  À retravailler ({missedCards.length}) · revu demain
                 </div>
                 <div className="space-y-1.5">
                   {missedCards.map(card => (
