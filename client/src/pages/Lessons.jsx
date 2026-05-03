@@ -134,12 +134,15 @@ export default function Lessons() {
       ) : lessons.length === 0 ? (
         <div className="text-sm text-center mt-10" style={{ color: '#9BA3AF' }}>Aucune leçon pour l'instant.</div>
       ) : (
-        <div className="space-y-2 w-full">
+        <div className="space-y-2 w-full max-w-2xl">
           {lessons.map((lesson) => (
             <div key={lesson.id} className="rounded-xl px-4 py-4 md:px-5" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
               <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate" style={{ color: '#1B2A4A' }}>{lesson.title}</div>
+                <div
+                  className="flex-1 min-w-0 cursor-pointer"
+                  onClick={() => navigate(`/lecons/${lesson.id}`)}
+                >
+                  <div className="text-sm font-medium truncate hover:underline" style={{ color: '#1B2A4A' }}>{lesson.title}</div>
                   <div className="text-xs mt-0.5" style={{ color: '#9BA3AF' }}>
                     {lesson.date && new Date(lesson.date).toLocaleDateString('fr-BE', { day: 'numeric', month: 'long', year: 'numeric' })}
                     {lesson.teacher && ` · ${lesson.teacher}`}

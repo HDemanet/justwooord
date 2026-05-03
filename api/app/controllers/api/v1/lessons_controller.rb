@@ -9,7 +9,10 @@ module Api
       end
 
       def show
-        render json: @lesson
+        lesson = current_user.lessons.find(params[:id])
+        render json: lesson
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Leçon introuvable.' }, status: :not_found
       end
 
       def create

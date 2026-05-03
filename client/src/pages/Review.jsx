@@ -242,7 +242,7 @@ export default function Review() {
   const [started, setStarted] = useState(false)
   const [limit, setLimit] = useState(20)
   const [totalDue, setTotalDue] = useState(0)
-  const [summary, setSummary] = useState({ correct: [], incorrect: [] })
+  const [summary, setSummary] = useState({})
   const [searchParams] = useSearchParams()
   const lessonId = searchParams.get('lesson_id')
 
@@ -259,7 +259,7 @@ export default function Review() {
       const url = `/review_cards/due?limit=${limit}${lessonId ? `&lesson_id=${lessonId}` : ''}`
       const res = await apiClient.get(url)
       setCards(res.data)
-      setSummary({ correct: [], incorrect: [] })
+      setSummary({})
       setCurrent(0)
       setStarted(true)
     } catch {}
@@ -275,29 +275,16 @@ export default function Review() {
       const newCards = [...prevCards]
       const card = newCards[current]
 
-      // Mise à jour du résumé
-      setSummary(prev => {
-        if (requeue) {
-          return {
-            ...prev,
-            incorrect: prev.incorrect.find(c => c.id === card.id)
-              ? prev.incorrect
-              : [...prev.incorrect, card]
-          }
-        } else {
-          return {
-            ...prev,
-            correct: [...prev.correct, card]
-          }
-        }
-      })
+      // Le dernier résultat prime — on écrase l'entrée précédente
+      setSummary(prev => ({
+        ...prev,
+        [card.id]: { card, mastered: !requeue }
+      }))
 
       if (requeue) {
-        // Remet la carte à une position aléatoire dans le reste de la file
         newCards.splice(current, 1)
         const remaining = newCards.length - current
         if (remaining === 0) {
-          // Plus de cartes restantes, fin de session
           setDone(true)
           return newCards
         }
@@ -379,63 +366,68 @@ export default function Review() {
     </Layout>
   )
 
-  if (done) return (
-    <Layout>
-      <div className="max-w-2xl mx-auto mt-8">
-        <div className="text-center mb-8">
-          <div className="text-4xl mb-3">✓</div>
-          <h2 className="text-xl font-semibold mb-1" style={{ color: '#1B2A4A' }}>Session terminée</h2>
-          <p className="text-sm" style={{ color: '#9BA3AF' }}>
-            {[...new Map(summary.correct.map(c => [c.id, c])).values()].length} mot{summary.correct.length > 1 ? 's' : ''} maîtrisé{summary.correct.length > 1 ? 's' : ''} · {[...new Map(summary.incorrect.map(c => [c.id, c])).values()].length} à retravailler
-          </p>
-        </div>
+  if (done) {
+    const masteredCards = Object.values(summary).filter(s => s.mastered).map(s => s.card)
+    const missedCards = Object.values(summary).filter(s => !s.mastered).map(s => s.card)
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          {summary.correct.length > 0 && (
-            <div className="rounded-xl p-5" style={{ background: '#EEF2FA', border: '1px solid #D0DCF0' }}>
-              <div className="text-xs font-medium mb-3 uppercase tracking-widest" style={{ color: '#4A7FCB' }}>
-                Maîtrisés ({[...new Map(summary.correct.map(c => [c.id, c])).values()].length})
-              </div>
-              <div className="space-y-1.5">
-                {[...new Map(summary.correct.map(c => [c.id, c])).values()].map(card => (
-                  <div key={card.id} className="text-sm flex items-center justify-between gap-4">
-                    <span className="font-medium" style={{ color: '#1B2A4A' }}>{card.word?.dutch}</span>
-                    <span style={{ color: '#9BA3AF' }}>{card.word?.french}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+    return (
+      <Layout>
+        <div className="max-w-2xl mx-auto mt-8">
+          <div className="text-center mb-8">
+            <div className="text-4xl mb-3">✓</div>
+            <h2 className="text-xl font-semibold mb-1" style={{ color: '#1B2A4A' }}>Session terminée</h2>
+            <p className="text-sm" style={{ color: '#9BA3AF' }}>
+              {masteredCards.length} mot{masteredCards.length > 1 ? 's' : ''} maîtrisé{masteredCards.length > 1 ? 's' : ''} · {missedCards.length} à retravailler
+            </p>
+          </div>
 
-          {summary.incorrect.length > 0 && (
-            <div className="rounded-xl p-5" style={{ background: '#FEF9EC', border: '1px solid #F3E0A0' }}>
-              <div className="text-xs font-medium mb-3 uppercase tracking-widest" style={{ color: '#92400E' }}>
-                À retravailler ({[...new Map(summary.incorrect.map(c => [c.id, c])).values()].length})
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            {masteredCards.length > 0 && (
+              <div className="rounded-xl p-5" style={{ background: '#EEF2FA', border: '1px solid #D0DCF0' }}>
+                <div className="text-xs font-medium mb-3 uppercase tracking-widest" style={{ color: '#4A7FCB' }}>
+                  Maîtrisés ({masteredCards.length})
+                </div>
+                <div className="space-y-1.5">
+                  {masteredCards.map(card => (
+                    <div key={card.id} className="text-sm flex items-center justify-between gap-4">
+                      <span className="font-medium" style={{ color: '#1B2A4A' }}>{card.word?.dutch}</span>
+                      <span style={{ color: '#9BA3AF' }}>{card.word?.french}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="space-y-1.5">
-                {[...new Map(summary.incorrect.map(c => [c.id, c])).values()].map(card => (
-                  <div key={card.id} className="text-sm flex items-center justify-between gap-4">
-                    <span className="font-medium" style={{ color: '#1B2A4A' }}>{card.word?.dutch}</span>
-                    <span style={{ color: '#9BA3AF' }}>{card.word?.french}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+            )}
 
-        <div className="text-center">
-          <button
-            onClick={() => { setStarted(false); setDone(false); setCurrent(0); setCards([]) }}
-            className="rounded-lg px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
-            style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}
-          >
-            Nouvelle session
-          </button>
+            {missedCards.length > 0 && (
+              <div className="rounded-xl p-5" style={{ background: '#FEF9EC', border: '1px solid #F3E0A0' }}>
+                <div className="text-xs font-medium mb-3 uppercase tracking-widest" style={{ color: '#92400E' }}>
+                  À retravailler ({missedCards.length})
+                </div>
+                <div className="space-y-1.5">
+                  {missedCards.map(card => (
+                    <div key={card.id} className="text-sm flex items-center justify-between gap-4">
+                      <span className="font-medium" style={{ color: '#1B2A4A' }}>{card.word?.dutch}</span>
+                      <span style={{ color: '#9BA3AF' }}>{card.word?.french}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="text-center">
+            <button
+              onClick={() => { setStarted(false); setDone(false); setCurrent(0); setCards([]); setSummary({}) }}
+              className="rounded-lg px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
+              style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}
+            >
+              Nouvelle session
+            </button>
+          </div>
         </div>
-      </div>
-    </Layout>
-  )
+      </Layout>
+    )
+  }
 
   return (
     <Layout>

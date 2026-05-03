@@ -10,7 +10,7 @@ Rails.application.routes.draw do
       namespace :v1 do
         get 'me', to: 'users#me'
         post 'import', to: 'imports#create'
-        resources :lessons, only: [:index, :create, :show, :update, :destroy]
+        resources :lessons, only: [:index, :show, :create, :update, :destroy]
         resources :words, only: [:index, :create, :show, :update, :destroy]
         resources :tags, only: [:index, :create, :destroy]
         resources :review_cards, only: [:index] do
