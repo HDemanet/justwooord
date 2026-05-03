@@ -99,18 +99,10 @@ function TypingCard({ card, onRate }) {
                 <div className="mt-1 text-xs text-gray-400">Tentative {attempts + 1} / 3</div>
               )}
               <div className="mt-3 flex gap-2">
-                <button
-                  type="submit"
-                  className="flex-1 text-white text-sm font-medium py-3 rounded-lg transition-opacity hover:opacity-90"
-                  style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}
-                >
+                <button type="submit" className="flex-1 text-white text-sm font-medium py-3 rounded-lg transition-opacity hover:opacity-90" style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}>
                   Valider
                 </button>
-                <button
-                  type="button"
-                  onClick={handleGiveUp}
-                  className="px-4 py-3 text-sm text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg transition-colors"
-                >
+                <button type="button" onClick={handleGiveUp} className="px-4 py-3 text-sm text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg transition-colors">
                   Voir la réponse
                 </button>
               </div>
@@ -142,11 +134,200 @@ function TypingCard({ card, onRate }) {
                   {word.example_fr && <div className="text-gray-400 mt-0.5">{word.example_fr}</div>}
                 </div>
               )}
-              <button
-                onClick={handleContinue}
-                className="mt-4 w-full text-white text-sm font-medium py-3 rounded-lg transition-opacity hover:opacity-90"
-                style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}
-              >
+              <button onClick={handleContinue} className="mt-4 w-full text-white text-sm font-medium py-3 rounded-lg transition-opacity hover:opacity-90" style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}>
+                J'ai compris, continuer
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {result === 'correct' && `Correct. Le mot est : ${word.dutch}`}
+        {result === 'incorrect' && `Incorrect. La bonne réponse est : ${word.dutch}`}
+      </div>
+    </>
+  )
+}
+
+function ContextCard({ card, onRate }) {
+  const [answer, setAnswer] = useState('')
+  const [attempts, setAttempts] = useState(0)
+  const [hint, setHint] = useState(null)
+  const [result, setResult] = useState(null)
+  const inputRef = useRef(null)
+  const word = card.word
+
+  useEffect(() => {
+    setAnswer('')
+    setAttempts(0)
+    setHint(null)
+    setResult(null)
+    setTimeout(() => inputRef.current?.focus(), 50)
+  }, [card.id])
+
+  const normalize = (str) =>
+    str.toLowerCase().trim()
+       .replace(/[àâä]/g, 'a').replace(/[éèêë]/g, 'e')
+       .replace(/[îï]/g, 'i').replace(/[ôö]/g, 'o')
+       .replace(/[ùûü]/g, 'u').replace(/ç/g, 'c')
+
+  const stripArticle = (str) =>
+    str.replace(/^(de|het)\s+/i, '').trim()
+
+  const getTarget = () => stripArticle(word.dutch)
+
+  const isCorrect = (input) =>
+    normalize(stripArticle(input)) === normalize(getTarget())
+
+  const getSentenceWithBlank = () => {
+    if (!word.example_nl) return null
+    const target = getTarget()
+    const sentence = word.example_nl
+
+    // Essaie plusieurs variantes du mot
+    const variants = [target, word.dutch, target.toLowerCase()].filter(Boolean)
+    for (const variant of variants) {
+      const escaped = variant.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const regex = new RegExp(`\\b${escaped}\\b`, 'i')
+      if (regex.test(sentence)) {
+        return sentence.replace(regex, '___')
+      }
+    }
+
+    // Correspondance partielle sur le premier mot (utile pour verbes séparables)
+    const firstWord = target.split(' ')[0]
+    const escapedFirst = firstWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const regexPartial = new RegExp(`\\b${escapedFirst}\\w*\\b`, 'i')
+    if (regexPartial.test(sentence)) {
+      return sentence.replace(regexPartial, '___')
+    }
+
+    // Rien trouvé — affiche la phrase telle quelle avec note
+    return null
+  }
+
+  const getHint = (attempt) => {
+    const w = getTarget()
+    if (attempt === 1) return `Commence par "${w[0].toUpperCase()}" · ${w.length} lettres`
+    if (attempt === 2) return `"${w.slice(0, Math.ceil(w.length / 2))}..."`
+    return null
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (result) return
+    if (isCorrect(answer)) {
+      setResult('correct')
+      setTimeout(() => onRate(card.id, attempts === 0 ? 3 : 2, false), 1200)
+    } else {
+      const newAttempts = attempts + 1
+      setAttempts(newAttempts)
+      if (newAttempts >= 3) {
+        setResult('incorrect')
+        setHint(null)
+      } else {
+        setHint(getHint(newAttempts))
+      }
+    }
+  }
+
+  const handleGiveUp = () => { setResult('incorrect'); setHint(null) }
+  const handleContinue = () => onRate(card.id, 1, true)
+
+  const sentenceWithBlank = getSentenceWithBlank()
+
+  return (
+    <>
+      <div className="w-full max-w-xl mx-auto">
+        <div className={`bg-white border rounded-xl p-5 md:p-8 mb-4 transition-colors ${
+          result === 'correct' ? 'border-green-200 bg-green-50' :
+          result === 'incorrect' ? 'border-amber-200 bg-amber-50' :
+          'border-gray-100'
+        }`}>
+          <div className="text-xs text-gray-400 uppercase tracking-widest mb-3">Complète la phrase</div>
+
+          {word.example_fr && (
+            <div className="text-sm mb-4 px-3 py-2 rounded-lg italic" style={{ color: '#9BA3AF', background: '#F8F9FC' }}>
+              {word.example_fr}
+            </div>
+          )}
+
+          {sentenceWithBlank ? (
+            <div className="text-lg md:text-xl font-medium mb-2" style={{ color: '#1B2A4A' }}>
+              {sentenceWithBlank}
+            </div>
+          ) : (
+            <div className="mb-2">
+              <div className="text-lg md:text-xl font-medium mb-1" style={{ color: '#1B2A4A' }}>
+                {word.example_nl}
+              </div>
+              <div className="text-xs px-3 py-1.5 rounded-lg inline-block" style={{ background: '#EEF2FA', color: '#4A7FCB' }}>
+                Traduction : {word.french}
+              </div>
+            </div>
+          )}
+
+          {word.grammatical_category && (
+            <div className="text-xs text-gray-400 mt-1">{word.grammatical_category}</div>
+          )}
+
+          {!result && (
+            <form onSubmit={handleSubmit} className="mt-6">
+              <input
+                ref={inputRef}
+                type="text"
+                value={answer}
+                onChange={e => setAnswer(e.target.value)}
+                placeholder={sentenceWithBlank ? "Tapez le mot manquant..." : "Tapez le mot en néerlandais..."}
+                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none transition-colors"
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck="false"
+              />
+              {hint && (
+                <div className="mt-2 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
+                  Indice : {hint}
+                </div>
+              )}
+              {attempts > 0 && attempts < 3 && (
+                <div className="mt-1 text-xs text-gray-400">Tentative {attempts + 1} / 3</div>
+              )}
+              <div className="mt-3 flex gap-2">
+                <button type="submit" className="flex-1 text-white text-sm font-medium py-3 rounded-lg transition-opacity hover:opacity-90" style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}>
+                  Valider
+                </button>
+                <button type="button" onClick={handleGiveUp} className="px-4 py-3 text-sm text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg transition-colors">
+                  Voir la réponse
+                </button>
+              </div>
+            </form>
+          )}
+
+          {result === 'correct' && (
+            <div className="mt-4">
+              <div className="text-green-700 font-medium text-sm mb-2">Correct !</div>
+              <div className="flex items-center gap-2">
+                <div className="text-lg font-medium" style={{ color: '#1B2A4A' }}>{word.dutch}</div>
+                <AudioButton text={word.dutch} />
+              </div>
+              {word.example_nl && (
+                <div className="mt-2 text-sm" style={{ color: '#4A5568' }}>{word.example_nl}</div>
+              )}
+            </div>
+          )}
+
+          {result === 'incorrect' && (
+            <div className="mt-4">
+              <div className="text-amber-700 font-medium text-sm mb-2">La bonne réponse :</div>
+              <div className="flex items-center gap-2">
+                <div className="text-xl font-medium text-gray-900">{word.dutch}</div>
+                <AudioButton text={word.dutch} />
+              </div>
+              {word.example_nl && (
+                <div className="mt-2 text-sm" style={{ color: '#4A5568' }}>{word.example_nl}</div>
+              )}
+              <button onClick={handleContinue} className="mt-4 w-full text-white text-sm font-medium py-3 rounded-lg transition-opacity hover:opacity-90" style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}>
                 J'ai compris, continuer
               </button>
             </div>
@@ -275,7 +456,6 @@ export default function Review() {
       const newCards = [...prevCards]
       const card = newCards[current]
 
-      // Le dernier résultat prime — on écrase l'entrée précédente
       setSummary(prev => ({
         ...prev,
         [card.id]: { card, mastered: !requeue }
@@ -429,6 +609,9 @@ export default function Review() {
     )
   }
 
+  const currentCard = cards[current]
+  const hasExample = currentCard?.word?.example_nl
+
   return (
     <Layout>
       <div className="mb-4 md:mb-6 flex items-center justify-between">
@@ -442,14 +625,21 @@ export default function Review() {
           <div className="flex gap-1 rounded-lg p-1" style={{ background: '#EEF2FA' }}>
             <button
               onClick={() => setMode('typing')}
-              className="px-3 py-1.5 text-xs rounded-md transition-colors"
+              className="px-2 md:px-3 py-1.5 text-xs rounded-md transition-colors"
               style={{ background: mode === 'typing' ? 'white' : 'transparent', color: mode === 'typing' ? '#1B2A4A' : '#9BA3AF', border: 'none', cursor: 'pointer' }}
             >
               Frappe
             </button>
             <button
+              onClick={() => setMode('contexte')}
+              className="px-2 md:px-3 py-1.5 text-xs rounded-md transition-colors"
+              style={{ background: mode === 'contexte' ? 'white' : 'transparent', color: mode === 'contexte' ? '#1B2A4A' : '#9BA3AF', border: 'none', cursor: 'pointer' }}
+            >
+              Contexte
+            </button>
+            <button
               onClick={() => setMode('flashcard')}
-              className="px-3 py-1.5 text-xs rounded-md transition-colors"
+              className="px-2 md:px-3 py-1.5 text-xs rounded-md transition-colors"
               style={{ background: mode === 'flashcard' ? 'white' : 'transparent', color: mode === 'flashcard' ? '#1B2A4A' : '#9BA3AF', border: 'none', cursor: 'pointer' }}
             >
               Flashcard
@@ -468,10 +658,18 @@ export default function Review() {
         </div>
       </div>
 
-      {mode === 'typing'
-        ? <TypingCard card={cards[current]} onRate={handleRate} />
-        : <FlipCard card={cards[current]} onRate={handleRate} />
-      }
+      {mode === 'typing' && <TypingCard card={currentCard} onRate={handleRate} />}
+      {mode === 'contexte' && (
+        hasExample
+          ? <ContextCard card={currentCard} onRate={handleRate} />
+          : <div className="w-full max-w-xl mx-auto">
+              <div className="rounded-xl p-3 mb-3 text-center text-xs" style={{ background: '#EEF2FA', color: '#4A7FCB' }}>
+                Pas d'exemple pour ce mot - mode frappe activé.
+              </div>
+              <TypingCard card={currentCard} onRate={handleRate} />
+            </div>
+      )}
+      {mode === 'flashcard' && <FlipCard card={currentCard} onRate={handleRate} />}
     </Layout>
   )
 }
