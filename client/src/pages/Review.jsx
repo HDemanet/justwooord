@@ -47,7 +47,7 @@ function TypingCard({ card, onRate }) {
     if (result) return
     if (isCorrect(answer)) {
       setResult('correct')
-      setTimeout(() => onRate(card.id, attempts === 0 ? 3 : 2), 1200)
+      setTimeout(() => onRate(card.id, attempts === 0 ? 3 : 2, false), 1200)
     } else {
       const newAttempts = attempts + 1
       setAttempts(newAttempts)
@@ -61,7 +61,7 @@ function TypingCard({ card, onRate }) {
   }
 
   const handleGiveUp = () => { setResult('incorrect'); setHint(null) }
-  const handleContinue = () => onRate(card.id, 1)
+  const handleContinue = () => onRate(card.id, 1, true)
 
   return (
     <>
@@ -171,9 +171,9 @@ function FlipCard({ card, onRate }) {
   useEffect(() => {
     const handleKey = (e) => {
       if (e.code === 'Space') { e.preventDefault(); setFlipped(true) }
-      if (e.key === '1' && flipped) onRate(card.id, 1)
-      if (e.key === '2' && flipped) onRate(card.id, 2)
-      if (e.key === '3' && flipped) onRate(card.id, 3)
+      if (e.key === '1' && flipped) onRate(card.id, 1, true)
+      if (e.key === '2' && flipped) onRate(card.id, 2, false)
+      if (e.key === '3' && flipped) onRate(card.id, 3, false)
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
@@ -218,13 +218,13 @@ function FlipCard({ card, onRate }) {
         </p>
       ) : (
         <div className="grid grid-cols-3 gap-2 md:gap-3">
-          <button onClick={() => onRate(card.id, 1)} className="py-3 md:py-4 rounded-lg bg-red-50 text-red-600 text-sm font-medium hover:bg-red-100 transition-colors">
-            Difficile<span className="block text-xs font-normal mt-0.5 opacity-70">demain</span>
+          <button onClick={() => onRate(card.id, 1, true)} className="py-3 md:py-4 rounded-lg bg-red-50 text-red-600 text-sm font-medium hover:bg-red-100 transition-colors">
+            Difficile<span className="block text-xs font-normal mt-0.5 opacity-70">revoir</span>
           </button>
-          <button onClick={() => onRate(card.id, 2)} className="py-3 md:py-4 rounded-lg bg-amber-50 text-amber-600 text-sm font-medium hover:bg-amber-100 transition-colors">
+          <button onClick={() => onRate(card.id, 2, false)} className="py-3 md:py-4 rounded-lg bg-amber-50 text-amber-600 text-sm font-medium hover:bg-amber-100 transition-colors">
             Correct<span className="block text-xs font-normal mt-0.5 opacity-70">3 jours</span>
           </button>
-          <button onClick={() => onRate(card.id, 3)} className="py-3 md:py-4 rounded-lg bg-green-50 text-green-600 text-sm font-medium hover:bg-green-100 transition-colors">
+          <button onClick={() => onRate(card.id, 3, false)} className="py-3 md:py-4 rounded-lg bg-green-50 text-green-600 text-sm font-medium hover:bg-green-100 transition-colors">
             Facile<span className="block text-xs font-normal mt-0.5 opacity-70">7 jours</span>
           </button>
         </div>
@@ -242,6 +242,7 @@ export default function Review() {
   const [started, setStarted] = useState(false)
   const [limit, setLimit] = useState(20)
   const [totalDue, setTotalDue] = useState(0)
+  const [summary, setSummary] = useState({ correct: [], incorrect: [] })
   const [searchParams] = useSearchParams()
   const lessonId = searchParams.get('lesson_id')
 
@@ -258,21 +259,62 @@ export default function Review() {
       const url = `/review_cards/due?limit=${limit}${lessonId ? `&lesson_id=${lessonId}` : ''}`
       const res = await apiClient.get(url)
       setCards(res.data)
+      setSummary({ correct: [], incorrect: [] })
+      setCurrent(0)
       setStarted(true)
     } catch {}
     setLoading(false)
   }
 
-  const handleRate = useCallback(async (cardId, quality) => {
+  const handleRate = useCallback(async (cardId, quality, requeue) => {
     try {
       await apiClient.patch(`/review_cards/${cardId}`, { quality })
     } catch {}
-    if (current + 1 >= cards.length) {
-      setDone(true)
-    } else {
-      setCurrent(c => c + 1)
-    }
-  }, [current, cards.length])
+
+    setCards(prevCards => {
+      const newCards = [...prevCards]
+      const card = newCards[current]
+
+      // Mise à jour du résumé
+      setSummary(prev => {
+        if (requeue) {
+          return {
+            ...prev,
+            incorrect: prev.incorrect.find(c => c.id === card.id)
+              ? prev.incorrect
+              : [...prev.incorrect, card]
+          }
+        } else {
+          return {
+            ...prev,
+            correct: [...prev.correct, card]
+          }
+        }
+      })
+
+      if (requeue) {
+        // Remet la carte à une position aléatoire dans le reste de la file
+        newCards.splice(current, 1)
+        const remaining = newCards.length - current
+        if (remaining === 0) {
+          // Plus de cartes restantes, fin de session
+          setDone(true)
+          return newCards
+        }
+        const insertAt = current + 1 + Math.floor(Math.random() * remaining)
+        newCards.splice(insertAt, 0, card)
+        return newCards
+      } else {
+        const nextIndex = current + 1
+        if (nextIndex >= newCards.length) {
+          setDone(true)
+        } else {
+          setCurrent(nextIndex)
+        }
+        return newCards
+      }
+    })
+  }, [current])
 
   if (loading) return (
     <Layout>
@@ -291,7 +333,8 @@ export default function Review() {
         </p>
       </div>
 
-<div className="rounded-xl p-5 w-full" style={{ background: 'white', border: '1px solid #E2E8F4' }}>        <div className="text-xs font-medium mb-4 tracking-widest uppercase" style={{ color: '#4A7FCB' }}>
+      <div className="rounded-xl p-5 w-full max-w-lg" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
+        <div className="text-xs font-medium mb-4 tracking-widest uppercase" style={{ color: '#4A7FCB' }}>
           Combien de mots aujourd'hui ?
         </div>
         <div className="grid grid-cols-3 gap-2 mb-5">
@@ -338,19 +381,58 @@ export default function Review() {
 
   if (done) return (
     <Layout>
-      <div className="max-w-xl mx-auto mt-16 text-center">
-        <div className="text-4xl mb-4">✓</div>
-        <h2 className="text-lg font-medium mb-2" style={{ color: '#1B2A4A' }}>Session terminée</h2>
-        <p className="text-sm mb-6" style={{ color: '#9BA3AF' }}>
-          {cards.length} mot{cards.length > 1 ? 's' : ''} révisé{cards.length > 1 ? 's' : ''}.
-        </p>
-        <button
-          onClick={() => { setStarted(false); setDone(false); setCurrent(0) }}
-          className="rounded-lg px-5 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
-          style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}
-        >
-          Nouvelle session
-        </button>
+      <div className="max-w-2xl mx-auto mt-8">
+        <div className="text-center mb-8">
+          <div className="text-4xl mb-3">✓</div>
+          <h2 className="text-xl font-semibold mb-1" style={{ color: '#1B2A4A' }}>Session terminée</h2>
+          <p className="text-sm" style={{ color: '#9BA3AF' }}>
+            {[...new Map(summary.correct.map(c => [c.id, c])).values()].length} mot{summary.correct.length > 1 ? 's' : ''} maîtrisé{summary.correct.length > 1 ? 's' : ''} · {[...new Map(summary.incorrect.map(c => [c.id, c])).values()].length} à retravailler
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          {summary.correct.length > 0 && (
+            <div className="rounded-xl p-5" style={{ background: '#EEF2FA', border: '1px solid #D0DCF0' }}>
+              <div className="text-xs font-medium mb-3 uppercase tracking-widest" style={{ color: '#4A7FCB' }}>
+                Maîtrisés ({[...new Map(summary.correct.map(c => [c.id, c])).values()].length})
+              </div>
+              <div className="space-y-1.5">
+                {[...new Map(summary.correct.map(c => [c.id, c])).values()].map(card => (
+                  <div key={card.id} className="text-sm flex items-center justify-between gap-4">
+                    <span className="font-medium" style={{ color: '#1B2A4A' }}>{card.word?.dutch}</span>
+                    <span style={{ color: '#9BA3AF' }}>{card.word?.french}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {summary.incorrect.length > 0 && (
+            <div className="rounded-xl p-5" style={{ background: '#FEF9EC', border: '1px solid #F3E0A0' }}>
+              <div className="text-xs font-medium mb-3 uppercase tracking-widest" style={{ color: '#92400E' }}>
+                À retravailler ({[...new Map(summary.incorrect.map(c => [c.id, c])).values()].length})
+              </div>
+              <div className="space-y-1.5">
+                {[...new Map(summary.incorrect.map(c => [c.id, c])).values()].map(card => (
+                  <div key={card.id} className="text-sm flex items-center justify-between gap-4">
+                    <span className="font-medium" style={{ color: '#1B2A4A' }}>{card.word?.dutch}</span>
+                    <span style={{ color: '#9BA3AF' }}>{card.word?.french}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="text-center">
+          <button
+            onClick={() => { setStarted(false); setDone(false); setCurrent(0); setCards([]) }}
+            className="rounded-lg px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            style={{ background: '#1B2A4A', border: 'none', cursor: 'pointer' }}
+          >
+            Nouvelle session
+          </button>
+        </div>
       </div>
     </Layout>
   )
