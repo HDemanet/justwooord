@@ -10,6 +10,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState({ due: 0, mastered: 0, learning: 0 })
   const [lessons, setLessons] = useState([])
   const [loading, setLoading] = useState(true)
+  const [savedSession, setSavedSession] = useState(null)
 
   useEffect(() => {
     Promise.all([
@@ -26,6 +27,11 @@ export default function Dashboard() {
       setLessons(lessonsRes.data.slice(0, 3))
       setLoading(false)
     }).catch(() => setLoading(false))
+
+    const saved = sessionStorage.getItem('justwooord_session')
+    if (saved) {
+      try { setSavedSession(JSON.parse(saved)) } catch {}
+    }
   }, [])
 
   const today = new Date().toLocaleDateString('fr-BE', {
@@ -44,6 +50,24 @@ export default function Dashboard() {
         </h1>
         <p className="text-sm" style={{ color: '#9BA3AF' }}>{today}</p>
       </div>
+
+      {savedSession && (
+        <div className="rounded-xl p-4 mb-5 flex items-center justify-between gap-4" style={{ background: lightBlue, border: '1px solid #D0DCF0' }}>
+          <div>
+            <div className="text-sm font-medium" style={{ color: navy }}>Session en cours</div>
+            <div className="text-xs mt-0.5" style={{ color: '#9BA3AF' }}>
+              Mot {savedSession.current + 1} sur {savedSession.cards.length}
+            </div>
+          </div>
+          <button
+            onClick={() => navigate('/reviser')}
+            className="text-xs font-medium px-3 py-1.5 rounded-lg transition-opacity hover:opacity-90 flex-shrink-0"
+            style={{ background: navy, color: 'white', border: 'none', cursor: 'pointer' }}
+          >
+            Reprendre
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-3 mb-5">
         {[
@@ -107,14 +131,19 @@ export default function Dashboard() {
           ) : (
             <div>
               {lessons.map((lesson, i) => (
-                <div key={lesson.id} className="flex items-center gap-3 py-2.5" style={{ borderBottom: i < lessons.length - 1 ? '1px solid #F0F4FA' : 'none' }}>
+                <div
+                  key={lesson.id}
+                  className="flex items-center gap-3 py-2.5 cursor-pointer"
+                  style={{ borderBottom: i < lessons.length - 1 ? '1px solid #F0F4FA' : 'none' }}
+                  onClick={() => navigate(`/lecons/${lesson.id}`)}
+                >
                   <div className="rounded-lg flex items-center justify-center flex-shrink-0" style={{ width: '30px', height: '30px', background: i === 0 ? lightBlue : '#F5F5F5' }}>
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke={i === 0 ? blue : '#9BA3AF'} strokeWidth="1.5">
                       <rect x="1" y="1" width="10" height="10" rx="1"/><path d="M1 5h10"/>
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate" style={{ color: navy }}>{lesson.title}</div>
+                    <div className="text-sm font-medium truncate hover:underline" style={{ color: navy }}>{lesson.title}</div>
                     <div className="text-xs mt-0.5" style={{ color: '#9BA3AF' }}>
                       {lesson.date && new Date(lesson.date).toLocaleDateString('fr-BE', { day: 'numeric', month: 'long', year: 'numeric' })}
                       {lesson.teacher && ` · ${lesson.teacher}`}
