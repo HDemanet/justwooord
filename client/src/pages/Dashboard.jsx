@@ -21,8 +21,8 @@ export default function Dashboard() {
       const allCards = all.data
       setStats({
         due: due.data.length,
-        mastered: allCards.filter(c => c.interval >= 21).length,
-        learning: allCards.filter(c => c.interval < 21).length,
+        mastered: allCards.filter(c => c.repetitions >= 3).length,
+        learning: allCards.filter(c => c.repetitions < 3).length,
       })
       setLessons(lessonsRes.data.slice(0, 3))
       setLoading(false)
@@ -85,6 +85,28 @@ export default function Dashboard() {
           </div>
         ))}
       </div>
+
+      {!loading && (
+        <div className="mb-5">
+          <div className="flex justify-between text-xs mb-1.5" style={{ color: '#9BA3AF' }}>
+            <span>Progression globale</span>
+            <span>{Math.round((stats.mastered / (stats.mastered + stats.learning || 1)) * 100)}%</span>
+          </div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: '#E2E8F4' }}>
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${Math.round((stats.mastered / (stats.mastered + stats.learning || 1)) * 100)}%`,
+                background: 'linear-gradient(to right, #4A7FCB, #6BA3E8)'
+              }}
+            />
+          </div>
+          <div className="flex justify-between text-xs mt-1.5" style={{ color: '#9BA3AF' }}>
+            <span>{stats.mastered} maîtrisés</span>
+            <span>{stats.learning} en cours</span>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col md:grid gap-4" style={{ gridTemplateColumns: '1fr 1.6fr' }}>
         <div className="rounded-xl p-5" style={{ background: 'white', border: '1px solid #E2E8F4' }}>
