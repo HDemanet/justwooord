@@ -24,7 +24,7 @@ export default function Layout({ children }) {
 
   const handleExport = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('jwt_token')
       const response = await fetch('/api/v1/export', {
         headers: { Authorization: `Bearer ${token}` }
       })
