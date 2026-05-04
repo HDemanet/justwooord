@@ -22,6 +22,7 @@ Rails.application.routes.draw do
           end
         end
         resources :review_sessions, only: [:create, :index]
+        resource :export, only: [:show]
       end
     end
 end

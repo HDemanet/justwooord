@@ -22,6 +22,25 @@ export default function Layout({ children }) {
     navigate('/login')
   }
 
+  const handleExport = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/v1/export', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (!response.ok) throw new Error()
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `justwooord_export_${new Date().toISOString().slice(0, 10)}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      alert('Erreur lors de l\'export.')
+    }
+  }
+
   return (
     <>
       <a href="#main-content" style={{position:'absolute',left:'-9999px'}} onFocus={e=>e.target.style.left='1rem'} onBlur={e=>e.target.style.left='-9999px'}>Aller au contenu principal</a>
@@ -71,14 +90,25 @@ export default function Layout({ children }) {
               </div>
               <span style={{ color: 'rgba(238,240,245,0.7)', fontSize: '12px' }}>{user?.name}</span>
             </div>
-            <button
-              onClick={handleLogout}
-              aria-label="Se déconnecter"
-              style={{ color: 'rgba(238,240,245,0.45)', fontSize: '11px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-              className="hover:opacity-75 transition-opacity"
-            >
-              Déconnexion
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleLogout}
+                aria-label="Se déconnecter"
+                style={{ color: 'rgba(238,240,245,0.45)', fontSize: '11px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                className="hover:opacity-75 transition-opacity"
+              >
+                Déconnexion
+              </button>
+              <span style={{ color: 'rgba(238,240,245,0.2)', fontSize: '11px' }}>·</span>
+              <button
+                onClick={handleExport}
+                aria-label="Exporter mes données"
+                style={{ color: 'rgba(238,240,245,0.45)', fontSize: '11px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                className="hover:opacity-75 transition-opacity"
+              >
+                Export RGPD
+              </button>
+            </div>
           </div>
         </aside>
 
