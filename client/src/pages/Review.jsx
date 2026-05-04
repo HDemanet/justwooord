@@ -63,12 +63,24 @@ function TypingCard({ card, onRate }) {
   const handleGiveUp = () => { setResult('incorrect'); setHint(null) }
   const handleContinue = () => onRate(card.id, 1, true)
 
+  useEffect(() => {
+    if (result !== 'incorrect') return
+    const handleKey = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        handleContinue()
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [result])
+
   return (
     <>
       <div className="w-full max-w-xl mx-auto">
         <div className={`bg-white border rounded-xl p-5 md:p-8 mb-4 transition-colors ${
           result === 'correct' ? 'border-green-200 bg-green-50' :
-          result === 'incorrect' ? 'border-amber-200 bg-amber-50' :
+          result === 'incorrect' ? 'border-blue-200 bg-blue-50' :
           'border-gray-100'
         }`}>
           <div className="text-xs text-gray-400 uppercase tracking-widest mb-3">Français</div>
@@ -91,7 +103,7 @@ function TypingCard({ card, onRate }) {
                 spellCheck="false"
               />
               {hint && (
-                <div className="mt-2 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
+                <div className="mt-2 text-xs text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
                   Indice : {hint}
                 </div>
               )}
@@ -122,14 +134,14 @@ function TypingCard({ card, onRate }) {
 
           {result === 'incorrect' && (
             <div className="mt-4">
-              <div className="text-amber-700 font-medium text-sm mb-2">La bonne réponse :</div>
+              <div className="text-blue-700 font-medium text-sm mb-2">La bonne réponse :</div>
               <div className="flex items-center gap-2">
                 <div className="text-xl font-medium text-gray-900">{word.dutch}</div>
                 <AudioButton text={word.dutch} />
               </div>
               {word.conjugated_form && <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>}
               {word.example_nl && (
-                <div className="mt-3 pt-3 border-t border-amber-100 text-sm text-gray-500">
+                <div className="mt-3 pt-3 border-t border-blue-100 text-sm text-gray-500">
                   <div>{word.example_nl}</div>
                   {word.example_fr && <div className="text-gray-400 mt-0.5">{word.example_fr}</div>}
                 </div>
@@ -235,6 +247,18 @@ function ContextCard({ card, onRate }) {
   const handleGiveUp = () => { setResult('incorrect'); setHint(null) }
   const handleContinue = () => onRate(card.id, 1, true)
 
+  useEffect(() => {
+    if (result !== 'incorrect') return
+    const handleKey = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        handleContinue()
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [result])
+
   const sentenceWithBlank = getSentenceWithBlank()
 
   return (
@@ -242,7 +266,7 @@ function ContextCard({ card, onRate }) {
       <div className="w-full max-w-xl mx-auto">
         <div className={`bg-white border rounded-xl p-5 md:p-8 mb-4 transition-colors ${
           result === 'correct' ? 'border-green-200 bg-green-50' :
-          result === 'incorrect' ? 'border-amber-200 bg-amber-50' :
+          result === 'incorrect' ? 'border-blue-200 bg-blue-50' :
           'border-gray-100'
         }`}>
           <div className="text-xs text-gray-400 uppercase tracking-widest mb-3">Complète la phrase</div>
@@ -286,7 +310,7 @@ function ContextCard({ card, onRate }) {
                 spellCheck="false"
               />
               {hint && (
-                <div className="mt-2 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
+                <div className="mt-2 text-xs text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
                   Indice : {hint}
                 </div>
               )}
@@ -319,7 +343,7 @@ function ContextCard({ card, onRate }) {
 
           {result === 'incorrect' && (
             <div className="mt-4">
-              <div className="text-amber-700 font-medium text-sm mb-2">La bonne réponse :</div>
+              <div className="text-blue-700 font-medium text-sm mb-2">La bonne réponse :</div>
               <div className="flex items-center gap-2">
                 <div className="text-xl font-medium text-gray-900">{word.dutch}</div>
                 <AudioButton text={word.dutch} />
@@ -402,7 +426,7 @@ function FlipCard({ card, onRate }) {
           <button onClick={() => onRate(card.id, 1, true)} className="py-3 md:py-4 rounded-lg bg-red-50 text-red-600 text-sm font-medium hover:bg-red-100 transition-colors">
             Difficile<span className="block text-xs font-normal mt-0.5 opacity-70">revoir</span>
           </button>
-          <button onClick={() => onRate(card.id, 2, false)} className="py-3 md:py-4 rounded-lg bg-amber-50 text-amber-600 text-sm font-medium hover:bg-amber-100 transition-colors">
+          <button onClick={() => onRate(card.id, 2, false)} className="py-3 md:py-4 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100 transition-colors">
             Correct<span className="block text-xs font-normal mt-0.5 opacity-70">3 jours</span>
           </button>
           <button onClick={() => onRate(card.id, 3, false)} className="py-3 md:py-4 rounded-lg bg-green-50 text-green-600 text-sm font-medium hover:bg-green-100 transition-colors">
