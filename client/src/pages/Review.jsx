@@ -4,13 +4,14 @@ import Layout from '../components/Layout'
 import apiClient from '../api/client'
 import AudioButton from '../components/ui/AudioButton'
 
-function TypingCard({ card, onRate }) {
+function TypingCard({ card, onRate, direction }) {
   const [answer, setAnswer] = useState('')
   const [attempts, setAttempts] = useState(0)
   const [hint, setHint] = useState(null)
   const [result, setResult] = useState(null)
   const inputRef = useRef(null)
   const word = card.word
+  const isNLFR = direction === 'nl_fr'
 
   useEffect(() => {
     setAnswer('')
@@ -30,13 +31,13 @@ function TypingCard({ card, onRate }) {
     str.replace(/^(de|het)\s+/i, '').trim()
 
   const isCorrect = (input) => {
-    const target = normalize(stripArticle(word.dutch))
-    const given = normalize(stripArticle(input))
+    const target = normalize(isNLFR ? word.french : stripArticle(word.dutch))
+    const given = normalize(isNLFR ? input : stripArticle(input))
     return target === given
   }
 
   const getHint = (attempt) => {
-    const w = stripArticle(word.dutch)
+    const w = isNLFR ? word.french : stripArticle(word.dutch)
     if (attempt === 1) return `Commence par "${w[0].toUpperCase()}" · ${w.length} lettres`
     if (attempt === 2) return `"${w.slice(0, Math.ceil(w.length / 2))}..."`
     return null
@@ -75,6 +76,11 @@ function TypingCard({ card, onRate }) {
     return () => window.removeEventListener('keydown', handleKey)
   }, [result])
 
+  const questionText = isNLFR ? word.dutch : word.french
+  const answerText = isNLFR ? word.french : word.dutch
+  const questionLabel = isNLFR ? 'Néerlandais' : 'Français'
+  const placeholder = isNLFR ? 'Tapez la traduction en français...' : 'Tapez le mot en néerlandais...'
+
   return (
     <>
       <div className="w-full max-w-xl mx-auto">
@@ -83,8 +89,8 @@ function TypingCard({ card, onRate }) {
           result === 'incorrect' ? 'border-blue-200 bg-blue-50' :
           'border-gray-100'
         }`}>
-          <div className="text-xs text-gray-400 uppercase tracking-widest mb-3">Français</div>
-          <div className="text-xl md:text-2xl font-medium text-gray-900 mb-1">{word.french}</div>
+          <div className="text-xs text-gray-400 uppercase tracking-widest mb-3">{questionLabel}</div>
+          <div className="text-xl md:text-2xl font-medium text-gray-900 mb-1">{questionText}</div>
           {word.grammatical_category && (
             <div className="text-xs text-gray-400">{word.grammatical_category}</div>
           )}
@@ -96,7 +102,7 @@ function TypingCard({ card, onRate }) {
                 type="text"
                 value={answer}
                 onChange={e => setAnswer(e.target.value)}
-                placeholder="Tapez le mot en néerlandais..."
+                placeholder={placeholder}
                 className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none transition-colors"
                 autoComplete="off"
                 autoCorrect="off"
@@ -125,8 +131,8 @@ function TypingCard({ card, onRate }) {
             <div className="mt-4">
               <div className="text-green-700 font-medium text-sm mb-1">Correct !</div>
               <div className="flex items-center gap-2">
-                <div className="text-lg font-medium" style={{ color: '#1B2A4A' }}>{word.dutch}</div>
-                <AudioButton text={word.dutch} />
+                <div className="text-lg font-medium" style={{ color: '#1B2A4A' }}>{answerText}</div>
+                {!isNLFR && <AudioButton text={word.dutch} />}
               </div>
               {word.conjugated_form && <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>}
             </div>
@@ -136,8 +142,8 @@ function TypingCard({ card, onRate }) {
             <div className="mt-4">
               <div className="text-blue-700 font-medium text-sm mb-2">La bonne réponse :</div>
               <div className="flex items-center gap-2">
-                <div className="text-xl font-medium text-gray-900">{word.dutch}</div>
-                <AudioButton text={word.dutch} />
+                <div className="text-xl font-medium text-gray-900">{answerText}</div>
+                {!isNLFR && <AudioButton text={word.dutch} />}
               </div>
               {word.conjugated_form && <div className="text-sm text-gray-400 italic mt-1">{word.conjugated_form}</div>}
               {word.example_nl && (
@@ -155,8 +161,8 @@ function TypingCard({ card, onRate }) {
       </div>
 
       <div aria-live="polite" aria-atomic="true" className="sr-only">
-        {result === 'correct' && `Correct. Le mot est : ${word.dutch}`}
-        {result === 'incorrect' && `Incorrect. La bonne réponse est : ${word.dutch}`}
+        {result === 'correct' && `Correct. La réponse est : ${answerText}`}
+        {result === 'incorrect' && `Incorrect. La bonne réponse est : ${answerText}`}
       </div>
     </>
   )
@@ -197,7 +203,6 @@ function ContextCard({ card, onRate }) {
     const target = getTarget()
     const sentence = word.example_nl
 
-    // Essaie plusieurs variantes du mot
     const variants = [target, word.dutch, target.toLowerCase()].filter(Boolean)
     for (const variant of variants) {
       const escaped = variant.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -207,7 +212,6 @@ function ContextCard({ card, onRate }) {
       }
     }
 
-    // Correspondance partielle sur le premier mot (utile pour verbes séparables)
     const firstWord = target.split(' ')[0]
     const escapedFirst = firstWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const regexPartial = new RegExp(`\\b${escapedFirst}\\w*\\b`, 'i')
@@ -215,7 +219,6 @@ function ContextCard({ card, onRate }) {
       return sentence.replace(regexPartial, '___')
     }
 
-    // Rien trouvé — affiche la phrase telle quelle avec note
     return null
   }
 
@@ -367,9 +370,10 @@ function ContextCard({ card, onRate }) {
   )
 }
 
-function FlipCard({ card, onRate }) {
+function FlipCard({ card, onRate, direction }) {
   const [flipped, setFlipped] = useState(false)
   const word = card.word
+  const isNLFR = direction === 'nl_fr'
 
   useEffect(() => { setFlipped(false) }, [card.id])
 
@@ -390,22 +394,22 @@ function FlipCard({ card, onRate }) {
         onClick={() => !flipped && setFlipped(true)}
         role="button"
         tabIndex={0}
-        aria-label={flipped ? `Réponse : ${word.dutch}` : `Mot à traduire : ${word.french}. Cliquer pour révéler.`}
+        aria-label={flipped ? `Réponse : ${isNLFR ? word.french : word.dutch}` : `Mot à traduire : ${isNLFR ? word.dutch : word.french}. Cliquer pour révéler.`}
         onKeyDown={e => e.key === 'Enter' && !flipped && setFlipped(true)}
         className={`bg-white border border-gray-100 rounded-xl p-8 md:p-10 text-center flex flex-col items-center justify-center mb-4 transition-colors ${!flipped ? 'cursor-pointer hover:bg-gray-50' : ''}`}
         style={{ minHeight: '200px' }}
       >
         {!flipped ? (
           <>
-            <div className="text-xs text-gray-400 uppercase tracking-widest mb-4">Français</div>
-            <div className="text-xl md:text-2xl font-medium text-gray-900">{word.french}</div>
+            <div className="text-xs text-gray-400 uppercase tracking-widest mb-4">{isNLFR ? 'Néerlandais' : 'Français'}</div>
+            <div className="text-xl md:text-2xl font-medium text-gray-900">{isNLFR ? word.dutch : word.french}</div>
             {word.grammatical_category && <div className="text-xs text-gray-400 mt-3">{word.grammatical_category}</div>}
           </>
         ) : (
           <>
-            <div className="text-xs text-gray-400 uppercase tracking-widest mb-4">Néerlandais</div>
-            <div className="text-xl md:text-2xl font-medium" style={{ color: '#1B2A4A' }}>{word.dutch}</div>
-            <AudioButton text={word.dutch} />
+            <div className="text-xs text-gray-400 uppercase tracking-widest mb-4">{isNLFR ? 'Français' : 'Néerlandais'}</div>
+            <div className="text-xl md:text-2xl font-medium" style={{ color: '#1B2A4A' }}>{isNLFR ? word.french : word.dutch}</div>
+            {!isNLFR && <AudioButton text={word.dutch} />}
             {word.conjugated_form && <div className="text-sm text-gray-400 mt-2 italic">{word.conjugated_form}</div>}
             {word.example_nl && (
               <div className="mt-4 pt-4 border-t border-gray-100 w-full text-sm text-gray-500 text-left">
@@ -444,6 +448,7 @@ export default function Review() {
   const [loading, setLoading] = useState(true)
   const [done, setDone] = useState(false)
   const [mode, setMode] = useState('typing')
+  const [direction, setDirection] = useState('fr_nl')
   const [started, setStarted] = useState(false)
   const [limit, setLimit] = useState(20)
   const [totalDue, setTotalDue] = useState(0)
@@ -452,19 +457,16 @@ export default function Review() {
   const [searchParams] = useSearchParams()
   const lessonId = searchParams.get('lesson_id')
 
-  // Charge le total disponible et vérifie s'il y a une session sauvegardée
   useEffect(() => {
     const url = `/review_cards/due?limit=999${lessonId ? `&lesson_id=${lessonId}` : ''}`
     apiClient.get(url)
       .then(res => { setTotalDue(res.data.length); setLoading(false) })
       .catch(() => setLoading(false))
 
-    // Vérifie session sauvegardée
     const saved = sessionStorage.getItem('justwooord_session')
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
-        // N'affiche que si c'est la même leçon (ou pas de leçon)
         if (parsed.lessonId === lessonId) {
           setSavedSession(parsed)
         }
@@ -472,25 +474,20 @@ export default function Review() {
     }
   }, [lessonId])
 
-  // Sauvegarde la session à chaque changement
   useEffect(() => {
     if (started && cards.length > 0 && !done) {
       sessionStorage.setItem('justwooord_session', JSON.stringify({
-        cards,
-        current,
-        mode,
-        limit,
-        summary,
-        lessonId,
+        cards, current, mode, direction, limit, summary, lessonId,
       }))
     }
-  }, [cards, current, mode, started, done, lessonId, limit, summary])
+  }, [cards, current, mode, direction, started, done, lessonId, limit, summary])
 
   const resumeSession = () => {
     if (!savedSession) return
     setCards(savedSession.cards)
     setCurrent(savedSession.current)
     setMode(savedSession.mode || 'typing')
+    setDirection(savedSession.direction || 'fr_nl')
     setLimit(savedSession.limit || 20)
     setSummary(savedSession.summary || {})
     setSavedSession(null)
@@ -527,11 +524,7 @@ export default function Review() {
 
       setSummary(prev => ({
         ...prev,
-        [card.id]: {
-          card,
-          mastered: !requeue,
-          easy: !requeue && quality === 3
-        }
+        [card.id]: { card, mastered: !requeue, easy: !requeue && quality === 3 }
       }))
 
       if (requeue) {
@@ -584,18 +577,10 @@ export default function Review() {
             </div>
           </div>
           <div className="flex gap-2">
-            <button
-              onClick={resumeSession}
-              className="text-xs font-medium px-3 py-1.5 rounded-lg transition-opacity hover:opacity-90"
-              style={{ background: '#1B2A4A', color: 'white', border: 'none', cursor: 'pointer' }}
-            >
+            <button onClick={resumeSession} className="text-xs font-medium px-3 py-1.5 rounded-lg transition-opacity hover:opacity-90" style={{ background: '#1B2A4A', color: 'white', border: 'none', cursor: 'pointer' }}>
               Reprendre
             </button>
-            <button
-              onClick={clearSavedSession}
-              className="text-xs px-3 py-1.5 rounded-lg transition-colors"
-              style={{ color: '#9BA3AF', background: 'none', border: '1px solid #E2E8F4', cursor: 'pointer' }}
-            >
+            <button onClick={clearSavedSession} className="text-xs px-3 py-1.5 rounded-lg transition-colors" style={{ color: '#9BA3AF', background: 'none', border: '1px solid #E2E8F4', cursor: 'pointer' }}>
               Ignorer
             </button>
           </div>
@@ -612,14 +597,22 @@ export default function Review() {
               key={n}
               onClick={() => setLimit(n)}
               className="py-3 rounded-lg text-sm font-medium transition-all"
-              style={{
-                background: limit === n ? '#1B2A4A' : '#EEF2FA',
-                color: limit === n ? 'white' : '#1B2A4A',
-                border: 'none',
-                cursor: 'pointer',
-              }}
+              style={{ background: limit === n ? '#1B2A4A' : '#EEF2FA', color: limit === n ? 'white' : '#1B2A4A', border: 'none', cursor: 'pointer' }}
             >
               {n}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex gap-2 mb-5">
+          {['fr_nl', 'nl_fr'].map(d => (
+            <button
+              key={d}
+              onClick={() => setDirection(d)}
+              className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all"
+              style={{ background: direction === d ? '#1B2A4A' : '#EEF2FA', color: direction === d ? 'white' : '#1B2A4A', border: 'none', cursor: 'pointer' }}
+            >
+              {d === 'fr_nl' ? 'FR → NL' : 'NL → FR'}
             </button>
           ))}
         </div>
@@ -738,9 +731,11 @@ export default function Review() {
           <h1 className="text-xl font-semibold" style={{ color: '#1B2A4A' }}>
             {lessonId ? 'Révision - leçon' : 'Révision'}
           </h1>
-          <p className="text-sm mt-1" style={{ color: '#9BA3AF' }}>FR vers NL</p>
+          <p className="text-sm mt-1" style={{ color: '#9BA3AF' }}>
+            {direction === 'fr_nl' ? 'FR vers NL' : 'NL vers FR'}
+          </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <div className="flex gap-1 rounded-lg p-1" style={{ background: '#EEF2FA' }}>
             <button
               onClick={() => setMode('typing')}
@@ -749,13 +744,15 @@ export default function Review() {
             >
               Frappe
             </button>
-            <button
-              onClick={() => setMode('contexte')}
-              className="px-2 md:px-3 py-1.5 text-xs rounded-md transition-colors"
-              style={{ background: mode === 'contexte' ? 'white' : 'transparent', color: mode === 'contexte' ? '#1B2A4A' : '#9BA3AF', border: 'none', cursor: 'pointer' }}
-            >
-              Contexte
-            </button>
+            {direction === 'fr_nl' && (
+              <button
+                onClick={() => setMode('contexte')}
+                className="px-2 md:px-3 py-1.5 text-xs rounded-md transition-colors"
+                style={{ background: mode === 'contexte' ? 'white' : 'transparent', color: mode === 'contexte' ? '#1B2A4A' : '#9BA3AF', border: 'none', cursor: 'pointer' }}
+              >
+                Contexte
+              </button>
+            )}
             <button
               onClick={() => setMode('flashcard')}
               className="px-2 md:px-3 py-1.5 text-xs rounded-md transition-colors"
@@ -777,18 +774,18 @@ export default function Review() {
         </div>
       </div>
 
-      {mode === 'typing' && <TypingCard card={currentCard} onRate={handleRate} />}
-      {mode === 'contexte' && (
+      {mode === 'typing' && <TypingCard card={currentCard} onRate={handleRate} direction={direction} />}
+      {mode === 'contexte' && direction === 'fr_nl' && (
         hasExample
           ? <ContextCard card={currentCard} onRate={handleRate} />
           : <div className="w-full max-w-xl mx-auto">
               <div className="rounded-xl p-3 mb-3 text-center text-xs" style={{ background: '#EEF2FA', color: '#4A7FCB' }}>
                 Pas d'exemple pour ce mot - mode frappe activé.
               </div>
-              <TypingCard card={currentCard} onRate={handleRate} />
+              <TypingCard card={currentCard} onRate={handleRate} direction={direction} />
             </div>
       )}
-      {mode === 'flashcard' && <FlipCard card={currentCard} onRate={handleRate} />}
+      {mode === 'flashcard' && <FlipCard card={currentCard} onRate={handleRate} direction={direction} />}
     </Layout>
   )
 }
